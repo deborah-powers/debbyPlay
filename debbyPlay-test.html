@@ -1,0 +1,117 @@
+<!doctype html>
+<html>
+<head>
+<title>démo de debby play</title>
+<meta name='viewport' content='width=device-width,initial-scale=1'/>
+<meta charset='utf-8'/>
+<script type='text/javascript' src='debbyPlay.js'></script>
+<link rel='stylesheet' type='text/css' href='debbyPlay.css'/>
+<link rel='stylesheet' type='text/css' href='colors.css' media='screen'/>
+<style type='text/css'>
+	.list, .list * {
+		display: flex;
+		justify-content: space-between;
+		border: solid 1px #603;
+		padding: 0.5em;
+	}
+	.colored { color: #033; }
+</style>
+</head>
+<body>
+<h1>démo du framework debby play</h1>
+<p>je veux pouvoir afficher les objets simples, les liste, les dictionnaires, ainsi que les sous-listes et sous-dictionnaires dans un template.</p>
+
+	<h2>les variables</h2>
+<p class='list'>
+	<span>du texte: (( texte ))</span>
+	<a href='(( link ))' target='blank'>un lien: (())</a>
+	<span>un nombre entier: (( entier ))</span>
+	<span>un nombre à virgule: (( flottant ))</span>
+</p>
+<p>une liste:</p><div class='list'><p><span><em>(( listeSimple )),</em>;</span>.</p></div>
+<p>un objet:</p>
+<div><p class='list'><span>(( objet.prenom ))</span><span>(( objet.nom ))</span> a comme pouvoir <span>(( objet.infos.pouvoir ))</span>,</p></div>
+<p>une liste d'objets:</p><div class='list'><p for='listeObjet'>(( prenom )) (( nom )),</p></div>
+<p>et</p>
+<div class='list'>
+	<span for='listeObjet' id='imbrique'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span>
+</div>
+<p>liste imbriquée d'objets:</p>
+<div class='list'><p>
+	<span for='listeObjetDb'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span>
+</p></div>
+<p>et</p>
+<div class='list'><p>
+	<span for='listeObjetTp'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span>
+</p></div>
+
+	<h2>l'interractivité</h2>
+<button onclick='changeColor()' style='background-color:(( color ));color:ivory'>changer ma couleur: (( color ))</button>
+<selection for='optionList'></selection>
+<carousel for='optionList'></carousel>
+<p id='choix'>option choisie: (( choix ))</p>
+
+	<h2>les templates</h2>
+<p>json: (( json.prenom )) (( json.nom ))</p>
+<div id='test-load-file'></div>
+<template id='test-id-tpl'><p>je suis le template interne</p><p>hello (( objet.prenom )) (( objet.nom ))</p></template>
+<template id='test-id-tpl-bis'>
+	<p>je suis le template interne, deuxième version</p><p>bojour (( objet.prenom )) (( objet.nom ))</p>
+</template>
+<test-id-tag>template locale</test-id-tag>
+<test-html-tag>template externe</test-html-tag>
+<button onclick='chooseTag("test-id-tpl")'>template n°1</button>
+<button onclick='chooseTag("test-id-tpl-bis")'>template n°2</button>
+</body>
+<script type='text/javascript'>
+// afficher des variables
+init (document.body);
+display.link = 'http://deborah-powers.fr/';
+display.texte = 'bonjour';
+display.entier = 12;
+display.flottant = 12.6;
+display.objet ={
+	'prenom': 'jean', 'nom': 'grey',
+	'infos': { 'alias': 'phénix', 'pouvoir': 'télépathie' }
+};
+display.listeSimple =[[['aaa','aab'],['aba','abb']],[['baa','bab'],['bba','bbb']]];
+display.listeObjet =[{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }];
+display.listeObjetDb =[
+[{ 'prenom': 'ororo', 'nom': 'munroe' }, { 'prenom': 'hank', 'nom': 'mc coy' }],
+[{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }]
+];
+display.listeObjetTp =[[
+[{ 'prenom': 'kitty', 'nom': 'pride' }, { 'prenom': 'kurt', 'nom': 'wagner' }],
+[{ 'prenom': 'anna', 'nom': 'marie' }, { 'prenom': 'charles', 'nom': 'xavier' }]
+], [
+[{ 'prenom': 'ororo', 'nom': 'munroe' }, { 'prenom': 'hank', 'nom': 'mc coy' }],
+[{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }]
+]];
+// modifier la couleur du bouton
+display.color = '#903';
+function changeColor(){
+	if (display.color === '#903') display.color = '#033';
+	else display.color = '#903';
+	load (document.getElementsByTagName ('button')[0]);
+}
+// récupérer le dossier contennant mes fichiers de test
+var path = slice (document.URL, 7,-9);
+// utiliser des templates et des json
+useJson (path + 'test.json', 'json', document.body);
+load();
+useTemplate ('test-id-tag', 'test-id-tpl');
+useTemplate ('test-html-tag', path + 'template.html');
+function chooseTag (tagid){ useTemplate ('test-id-tag', tagid); }
+// afficher des sélecteurs
+display.choix = 'poire';
+display.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
+function chooseOption (option){
+	console.log (option);
+	display.choix = option;
+	load (document.getElementById ('choix'));
+}
+createSelection ('optionList', chooseOption, document.body);
+createCarousel ('optionList', chooseOption, document.body);
+</script>
+</html>
+

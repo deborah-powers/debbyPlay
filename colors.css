@@ -1,0 +1,64 @@
+/* donner du style à mon exemple */
+:root {
+	--button-bg: #903;
+	--button-height: 2em;
+	--button-bg-hover: var(--button-bg);
+	--button-color: ivory;
+	--button-color-hover: var(--button-color);
+	--button-border: none;
+	--option-size: 1em;
+}
+html { background-color: #903; }
+body {
+	margin: auto;
+	font-size: 1em;
+	max-width: 36cm;
+	padding: 0.5em;
+	background-color: ivory;
+	color: #603;
+	font-family: serif;
+	border-color: #603;
+	border-width: 2px;
+	border-style: none;
+}
+body >* { margin: 0.2em; }
+* {
+	box-sizing: border-box;
+	padding: 0;
+	margin: 0;
+	font-size: 1em;
+	line-height: 2em;
+	vertical-align: top;
+	font-family: inherit;
+	font-style: normal;
+	font-weight: normal;
+	text-decoration: none;
+	color: inherit;
+	background: none;
+	border-width: inherit;
+	border-style: none;
+	border-color: inherit;
+}
+*:first-letter { text-transform: uppercase; }
+h1 {
+	text-align: center;
+	font-size: 2em;
+}
+h2 {
+	text-align: center;
+	font-size: 1.5em;
+}
+a:hover { font-weight: bold; }
+button, input, select, textarea { outline: none; }
+button {
+	text-align: center;
+	display: inline-block;
+	height: var(--button-height, 2em);
+	line-height: var(--button-height, 2em);
+	padding: 0.2em;
+	padding-top: 0;
+	color: var(--button-color, ivory);
+	background-color: var(--button-bg, #903);
+	border-style: var(--button-border, none);
+}
+input { background-color: #F99; }
