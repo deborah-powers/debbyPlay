@@ -16,7 +16,7 @@ init = function (node){
 load = function (node){
 	if (! node) node = document.body;
 	getModel (node);
-	for (var v in display) printVar (v, display[v], node);
+	for (var v in debbyPlay) printVar (v, debbyPlay[v], node);
 	printLinks();
 }
 // afficher des sélecteurs. la target de funcRes est une string
@@ -26,12 +26,12 @@ createSelection = function (varName, funcRes, node){
 		if (selectList[s].attributes['for'] && selectList[s].attributes['for'].value == varName){
 			var title = createNode ('p', "", selectList[s]);
 			var option;
-			for (var v in display[varName]){
-				option = createNode ('option', display[varName][v], selectList[s], null, null, v);
+			for (var v in debbyPlay[varName]){
+				option = createNode ('option', debbyPlay[varName][v], selectList[s], null, null, v);
 				option.addEventListener ('click', updateSelection);
 				if (funcRes) option.addEventListener ('click', function (event){ funcRes (event.target.innerText.toLowerCase()) });
 			}
-			title.innerHTML = display[varName][0];
+			title.innerHTML = debbyPlay[varName][0];
 			title.id =0;
 }}}
 createCarousel = function (varName, funcRes, node){
@@ -39,9 +39,9 @@ createCarousel = function (varName, funcRes, node){
 	for (var s=0; s< selectList.length; s++){
 		if (selectList[s].attributes['for'] && selectList[s].attributes['for'].value == varName){
 			var before = createNode ('p', '<', selectList[s]);
-			var title = createInput ('text', display[varName][0], selectList[s]);
+			var title = createInput ('text', debbyPlay[varName][0], selectList[s]);
 			var after = createNode ('p', '>', selectList[s]);
-			var varObj = display[varName];
+			var varObj = debbyPlay[varName];
 			title.addEventListener ('click', function (evt){ setCurrent (evt, varObj, funcRes) });
 			before.addEventListener ('click', function (evt){ setBefore (evt, varObj, funcRes) });
 			after.addEventListener ('click', function (evt){ setAfter (evt, varObj, funcRes) });
@@ -92,7 +92,7 @@ useJson = function (jsonFile, varName, node){
 	xhttp.send();
 	if (xhttp.status ==200){
 		var res = JSON.parse (xhttp.responseText);
-		display[varName] = res;
+		debbyPlay[varName] = res;
 }}
 useJsonAssync = function (jsonFile, varName, node, func){
 	var xhttp = new XMLHttpRequest();
@@ -101,7 +101,7 @@ useJsonAssync = function (jsonFile, varName, node, func){
 	xhttp.onreadystatechange = function(){
 		if (this.readyState == 4){
 			var res = JSON.parse (this.responseText);
-			display[varName] = res;
+			debbyPlay[varName] = res;
 			if (func) func();
 	}};
 	xhttp.open ('GET', jsonFile, true);
