@@ -66,21 +66,21 @@
 <script type='text/javascript'>
 // afficher des variables
 init (document.body);
-display.link = 'http://deborah-powers.fr/';
-display.texte = 'bonjour';
-display.entier = 12;
-display.flottant = 12.6;
-display.objet ={
+debbyPlay.link = 'http://deborah-powers.fr/';
+debbyPlay.texte = 'bonjour';
+debbyPlay.entier = 12;
+debbyPlay.flottant = 12.6;
+debbyPlay.objet ={
 	'prenom': 'jean', 'nom': 'grey',
 	'infos': { 'alias': 'phénix', 'pouvoir': 'télépathie' }
 };
-display.listeSimple =[[['aaa','aab'],['aba','abb']],[['baa','bab'],['bba','bbb']]];
-display.listeObjet =[{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }];
-display.listeObjetDb =[
+debbyPlay.listeSimple =[[['aaa','aab'],['aba','abb']],[['baa','bab'],['bba','bbb']]];
+debbyPlay.listeObjet =[{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }];
+debbyPlay.listeObjetDb =[
 [{ 'prenom': 'ororo', 'nom': 'munroe' }, { 'prenom': 'hank', 'nom': 'mc coy' }],
 [{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }]
 ];
-display.listeObjetTp =[[
+debbyPlay.listeObjetTp =[[
 [{ 'prenom': 'kitty', 'nom': 'pride' }, { 'prenom': 'kurt', 'nom': 'wagner' }],
 [{ 'prenom': 'anna', 'nom': 'marie' }, { 'prenom': 'charles', 'nom': 'xavier' }]
 ], [
@@ -88,10 +88,10 @@ display.listeObjetTp =[[
 [{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }]
 ]];
 // modifier la couleur du bouton
-display.color = '#903';
+debbyPlay.color = '#903';
 function changeColor(){
-	if (display.color === '#903') display.color = '#033';
-	else display.color = '#903';
+	if (debbyPlay.color === '#903') debbyPlay.color = '#033';
+	else debbyPlay.color = '#903';
 	load (document.getElementsByTagName ('button')[0]);
 }
 // récupérer le dossier contennant mes fichiers de test
@@ -103,11 +103,11 @@ useTemplate ('test-id-tag', 'test-id-tpl');
 useTemplate ('test-html-tag', path + 'template.html');
 function chooseTag (tagid){ useTemplate ('test-id-tag', tagid); }
 // afficher des sélecteurs
-display.choix = 'poire';
-display.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
+debbyPlay.choix = 'poire';
+debbyPlay.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
 function chooseOption (option){
 	console.log (option);
-	display.choix = option;
+	debbyPlay.choix = option;
 	load (document.getElementById ('choix'));
 }
 createSelection ('optionList', chooseOption, document.body);

@@ -7,7 +7,7 @@ dépendence: display.css
 ________________________ fonctions utilisable par vous ________________________ */
 
 // affichage de base
-var display ={};
+var debbyPlay ={};
 init = function (node){
 	if (! node) node = document.body;
 	cleanNode (node);
