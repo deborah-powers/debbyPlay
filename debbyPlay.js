@@ -202,13 +202,17 @@ printVar = function (varName, value, node){
 			if (typeof (node.attributes[a].value) == 'string' && containsText (node.attributes[a].value, '(('+ varName +'))'))
 				node.setAttribute (node.attributes[a].name, replace (node.attributes[a].value, '(('+ varName +'))', value));
 	}}
-	// les dictionnaires
-	else if (varType == 'object' && ! value[0]){
-		for (var v in value) printVar (varName +'.'+v, value[v], node);
+	else if (varType == 'object'){
+		// les listes
+		if (value[0]){
+			printDictList (varName, value, node);
+			printList (varName, value, node);
+		}
+		// les dictionnaires
+		else{
+			for (var v in value) printVar (varName +'.'+v, value[v], node);
+		}
 	}
-	// les listes
-	printDictList (varName, value, node);
-	printList (varName, value, node);
 }
 printLinks = function(){
 	var linkList = document.getElementsByTagName ('a');
@@ -291,17 +295,17 @@ printList = function (varName, value, node){
 }
 findContainerParenthesis = function (varName, node){
 	// retrouver le noeud contenant directement la variable, avec les parenthèses
-	if (! containsText (node.innerHTML, '(('+ varName +'))')) return null;
-	var nbOcurencies = count (node.innerHTML, '(('+ varName +'))');
+	if (! containsText (node.outerHTML, '(('+ varName +'))')) return null;
+	var nbOcurencies = count (node.outerHTML, '(('+ varName +'))');
 	var containerList =[];
 	var containerListTmp =[];
 	var c=0;
 	while (nbOcurencies >0 && c< node.children.length){
-		if (containsText (node.children[c].innerHTML, '(('+ varName +'))')){
+		if (containsText (node.children[c].outerHTML, '(('+ varName +'))')){
 			containerListTmp = findContainerParenthesis (varName, node.children[c]);
 			if (containerListTmp && containerListTmp.length >0){
 				for (var l in containerListTmp) containerList.push (containerListTmp[l]);
-				nbOcurencies --;
+				nbOcurencies -= count (node.children[c].outerHTML, '(('+ varName +'))');
 			}
 		}
 		c++;
@@ -343,7 +347,6 @@ function copyNode (node, bind=true){
 	if (! node){
 		var src = getStack()[1];
 		console.log ('copie impossible, pas de noeud modèle\nfonction:\t' + src.func + '\nfichier:\t' + src.file + '\nligne:\t\t' + src.line);
-		console.log ();
 		return null;
 	}
 	var newNode = node.cloneNode();
