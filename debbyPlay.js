@@ -202,16 +202,13 @@ printVar = function (varName, value, node){
 			if (typeof (node.attributes[a].value) == 'string' && containsText (node.attributes[a].value, '(('+ varName +'))'))
 				node.setAttribute (node.attributes[a].name, replace (node.attributes[a].value, '(('+ varName +'))', value));
 	}}
+	// les listes
+	else if (varType == 'object' && value[0]){
+		printList (varName, value, node);
+	}
+	// les dictionnaires
 	else if (varType == 'object'){
-		// les listes
-		if (value[0]){
-			printDictList (varName, value, node);
-			printList (varName, value, node);
-		}
-		// les dictionnaires
-		else{
 			for (var v in value) printVar (varName +'.'+v, value[v], node);
-		}
 	}
 }
 printLinks = function(){
@@ -233,21 +230,29 @@ printLinks = function(){
 		link = replace (link, '_', " ");
 		linkList[l].innerHTML = replace (linkList[l].innerHTML, '(())', link);
 }}
-printDictList = function (varName, value, node){
-	// afficher une liste de dictionnaires
-	if (typeof (value) != 'object' || ! value[0] || typeof (value[0]) != 'object') return;
-	var containerList = findContainerFor (varName, node);
+printList = function (varName, value, node){
+	// afficher une liste imbriquée
+	// récupérer les conteneurs directs
+	if (typeof (value) != 'object' || ! value[0]) return;
+	var containerList = findContainerParenthesis (varName, node);
+	if (! containerList) containerList =[];
+	var containerListTmp = findContainerFor (varName, node);
+	if (containerListTmp){
+		for (var c in containerListTmp) containerList.push (containerListTmp[c]);
+	}
 	if (! containerList) return;
+	// récupérer les conteneurs parents, pour les listes imbriquées
 	var v=0, container;
-	// liste imbriquée
 	if (value[0][0]){
 		for (var l in containerList){
 			containerList[l] = findContainerList (value, containerList[l]);
 			for (v=0; v< value.length -1; v++){
 				container = copyNode (containerList[l]);
 				printVar (varName, value[v], container);
+				printVar ("", value[v], container);
 			}
 			printVar (varName, value[v], containerList[l]);
+			printVar ("", value[v], containerList[l]);
 		}
 	}
 	// liste de dictionnaires
@@ -277,21 +282,6 @@ findContainerFor = function (varName, node){
 		}
 	}
 	return containerList;
-}
-printList = function (varName, value, node){
-	// afficher une liste imbriquée
-	if (typeof (value) != 'object' || ! value[0]) return;
-	var containerList = findContainerParenthesis (varName, node);
-	if (! containerList) return;
-	var v=0, container;
-	for (var l in containerList){
-		containerList[l] = findContainerList (value, containerList[l]);
-		for (v=0; v< value.length -1; v++){
-			container = copyNode (containerList[l]);
-			printVar (varName, value[v], container);
-		}
-		printVar (varName, value[v], containerList[l]);
-	}
 }
 findContainerParenthesis = function (varName, node){
 	// retrouver le noeud contenant directement la variable, avec les parenthèses
