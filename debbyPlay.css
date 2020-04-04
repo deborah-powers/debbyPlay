@@ -1,12 +1,13 @@
 /* mettre en forme certains éléments de mon cadriciel display. */
 
-template { display: none; }
-selection {
+template	{	display: none;	}
+insert		{	display: block;	}
+selection	{
 	display: block;
 	border: solid 2px var(--button-bg);
 }
-selection * { width: 100%; }
-selection p {
+selection *	{	width: 100%;	}
+selection p	{
 	text-align: center;
 	height: var(--button-height, 2em);
 	line-height: var(--button-height, 2em);
@@ -16,28 +17,28 @@ selection p {
 	background-color: var(--button-bg, #DDD);
 	border-style: var(--button-border, none);
 }
-selection p:before { content: 'Choisir: '; }
-selection option { display: none; }
-selection option:hover { font-weight: bold; }
-selection:hover option { display: block; }
-carousel {
+selection p:before		{	content: 'Choisir: ';	}
+selection option		{	display: none;	}
+selection option:hover	{	font-weight: bold;	}
+selection:hover option	{	display: block;	}
+carousel	{
 	display: grid;
 	grid-template-columns: 1fr 80% 1fr;
 	text-align: center;
 	height: 2em;
 	align-items: stretch;
 }
-carousel * {
+carousel *	{
 	box-sizing: border-box;
 	height: 100%;
 	margin: 0;
 	padding: 0;
 }
-carousel p {
+carousel p	{
 	font-weight: bold;
 	background-color: var(--button-bg, #DDD);
 	color: var(--button-color, black);
 }
-carousel input {
+carousel input	{
 	outline: none;
 }
