@@ -10,6 +10,7 @@ ________________________ fonctions utilisable par vous ________________________ 
 var debbyPlay ={};
 init = function (node){
 	if (! node) node = document.body;
+	useTemplates (node);
 	cleanNode (node);
 	setModel (node);
 }
@@ -17,74 +18,63 @@ load = function (node){
 	if (! node) node = document.body;
 	getModel (node);
 	for (var v in debbyPlay) printVar (v, debbyPlay[v], node);
+	setInput();
 	printLinks();
+	createSelections (node);
+	createCarousels (node);
 }
 // afficher des sélecteurs. la target de funcRes est une string
-createSelection = function (varName, funcRes, node){
+function createSelections (node){
 	var selectList = node.getElementsByTagName ('selection');
+	var title, option, varName, callback;
 	for (var s=0; s< selectList.length; s++){
-		if (selectList[s].attributes['for'] && selectList[s].attributes['for'].value == varName){
-			var title = createNode ('p', "", selectList[s]);
-			var option;
-			for (var v in debbyPlay[varName]){
-				option = createNode ('option', debbyPlay[varName][v], selectList[s], null, null, v);
-				option.addEventListener ('click', updateSelection);
-				if (funcRes) option.addEventListener ('click', function (event){ funcRes (event.target.innerText.toLowerCase()) });
-			}
-			title.innerHTML = debbyPlay[varName][0];
-			title.id =0;
-}}}
-createCarousel = function (varName, funcRes, node){
+		varName = selectList[s].getAttribute ('for');
+		callback = this [selectList[s].getAttribute ('callback')];
+		title = createNode ('p', "", selectList[s]);
+		for (var v in debbyPlay[varName]){
+			option = createNode ('option', debbyPlay[varName][v], selectList[s], null, null, v);
+			option.addEventListener ('click', updateSelection);
+			if (callback) option.addEventListener ('click', function (event){ callback (event.target.innerText.toLowerCase()) });
+		}
+		title.innerHTML = debbyPlay[varName][0];
+		title.id =0;
+}}
+function createCarousels (node){
 	var selectList = node.getElementsByTagName ('carousel');
+	var title, varName, callback, before, after, option;
 	for (var s=0; s< selectList.length; s++){
-		if (selectList[s].attributes['for'] && selectList[s].attributes['for'].value == varName){
-			var before = createNode ('p', '<', selectList[s]);
-			var title = createInput ('text', debbyPlay[varName][0], selectList[s]);
-			var after = createNode ('p', '>', selectList[s]);
-			var varObj = debbyPlay[varName];
-			title.addEventListener ('click', function (evt){ setCurrent (evt, varObj, funcRes) });
-			before.addEventListener ('click', function (evt){ setBefore (evt, varObj, funcRes) });
-			after.addEventListener ('click', function (evt){ setAfter (evt, varObj, funcRes) });
-}}}
-// utiliser un template html
-useTemplate = function (tagName, id){
-	var tagDst = document.getElementsByTagName (tagName)[0];
-	tagDst.style.display = 'block';
-	var templateSrc =null;
-	if (id.indexOf ('.html') >1){
+		varName = selectList[s].getAttribute ('for');
+		callback = this [selectList[s].getAttribute ('callback')];
+		before = createNode ('p', '<', selectList[s]);
+		title = createInput ('text', debbyPlay[varName][0], selectList[s]);
+		after = createNode ('p', '>', selectList[s]);
+		title.addEventListener ('click', function (evt){ setCurrent (evt, callback) });
+		before.addEventListener ('click', function (evt){ setBefore (evt, callback) });
+		after.addEventListener ('click', function (evt){ setAfter (evt, callback) });
+}}
+useTemplate = function (idInsert, idTemplate, node){
+	// utiliser un template html
+	if (! node) node = document.body;
+	var insertList = node.getElementsByTagName ('insert');
+	if (containsText (idTemplate, '.html')){
 		var xhttp = new XMLHttpRequest();
-		xhttp.open ('GET', id, false);
+		xhttp.open ('GET', insertList[f].id, false);
 		xhttp.send();
 		if (xhttp.status ==200){
-			tagDst.innerHTML = xhttp.responseText;
-			tagDst = tagDst.children[0];
-			init (tagDst);
-			load (tagDst);
-	}}
+			for (var i in insertList){
+				if (insertList[i].id == idInsert){
+					insertList[i].innerHTML = xhttp.responseText;
+					insertList[f] = insertList[f].children[0];
+	}}}}
 	else{
-		templateSrc = document.getElementById (id);
-		tagDst.innerHTML = templateSrc.innerHTML;
-}}
-useTemplateAssync = function (tagName, id){
-	var tagDst = document.getElementsByTagName (tagName)[0];
-	tagDst.style.display = 'block';
-	var templateSrc =null;
-	if (id.indexOf ('.html') >1){
-		var xhttp = new XMLHttpRequest();
-		xhttp.onreadystatechange = function(){
-			if (this.readyState == 4){
-				tagDst.innerHTML = this.responseText;
-				tagDst = tagDst.children[0];
-				init (tagDst);
-				load (tagDst);
-		}};
-		xhttp.open ('GET', id, true);
-		xhttp.send();
-	}
-	else{
-		templateSrc = document.getElementById (id);
-		tagDst.innerHTML = templateSrc.innerHTML;
-}}
+		var templateList = node.getElementsByTagName ('template');
+		var template;
+		for (var t in templateList){
+			if (templateList[t].id == idTemplate) template = templateList[t];
+		}
+		for (var i in insertList){
+			if (insertList[i].id == idInsert) insertList[i].innerHTML = template.innerHTML;
+}}}
 // utiliser un fichier json
 useJson = function (jsonFile, varName, node){
 	var xhttp = new XMLHttpRequest();
@@ -111,32 +101,35 @@ useJsonAssync = function (jsonFile, varName, node, func){
 
 // conserver le template de la page afin de la recharger
 function setModel (node){
-	if (containsText (node.outerHTML, '))')){
+	if (node.tagName == 'SCRIPT') return;
+	else if (containsText (node.outerHTML, '))')){
 		var attributeList ="";
 		var modelTmp;
 		if (containsText (node.innerHTML, '))')){
 			modelTmp = copyText (node.innerHTML);
 			modelTmp = replace (modelTmp, '((', '{{');
 			modelTmp = replace (modelTmp, '))', '}}');
-			attributeList = attributeList +'\n$body:'+ modelTmp;
+			attributeList = attributeList +'$body:'+ modelTmp;
 		}
 		for (var a in node.attributes){
 			if (typeof (node.attributes[a].value) == 'string' && node.attributes[a].name != 'model' && containsText (node.attributes[a].value, '))')){
 				modelTmp = copyText (node.attributes[a].value);
 				modelTmp = replace (modelTmp, '((', '{{');
 				modelTmp = replace (modelTmp, '))', '}}');
-				attributeList = attributeList +'\n$'+ node.attributes[a].name +':'+ modelTmp;
+				attributeList = attributeList +'$'+ node.attributes[a].name +':'+ modelTmp;
 			}
 		}
 		node.setAttribute ('model', attributeList);
-		for (var c=0; c< node.children.length; c++) setModel (node.children[c]);
+		for (var c=0; c< node.children.length; c++){
+			if (node.tagName != 'SCRIPT') setModel (node.children[c]);
+		}
 	}
 }
 function getModel (node){
 	if (node.getAttribute ('model')){
 		var modelTmp ="";
 		var d=0;
-		var attributeList = split (node.getAttribute ('model'), '\n$');
+		var attributeList = split (node.getAttribute ('model'), '$');
 		var trash = attributeList.shift();
 		if (slice (attributeList[0], 0,5) == 'body:'){
 			modelTmp = slice (attributeList[0], 5);
@@ -160,8 +153,9 @@ updateSelection = function (event){
 	title.innerText = event.target.innerText;
 	title.id = event.target.value;
 }
-setCurrent = function (event, list, funcRes){
+setCurrent = function (event, funcRes){
 	var title = event.target.parentElement.getElementsByTagName ('input')[0];
+	var list = debbyPlay [title.value, event.target.parentElement.getAttribute ('for')];
 	var currentPos = list.indexOf (title.value);
 	if (currentPos <0){
 		currentPos = list.length -1;
@@ -169,8 +163,9 @@ setCurrent = function (event, list, funcRes){
 	}
 	if (funcRes) funcRes (title.value);
 }
-setBefore = function (event, list, funcRes){
+setBefore = function (event, funcRes){
 	var title = event.target.parentElement.getElementsByTagName ('input')[0];
+	var list = debbyPlay [title.value, event.target.parentElement.getAttribute ('for')];
 	var currentPos = list.indexOf (title.value);
 	currentPos -=1;
 	if (currentPos <0) currentPos = list.length -1;
@@ -178,14 +173,27 @@ setBefore = function (event, list, funcRes){
 	title.value = list[currentPos];
 	if (funcRes) funcRes (title.value);
 }
-setAfter = function (event, list, funcRes){
+setAfter = function (event, funcRes){
 	var title = event.target.parentElement.getElementsByTagName ('input')[0];
+	var list = debbyPlay [title.value, event.target.parentElement.getAttribute ('for')];
 	var currentPos = list.indexOf (title.value);
 	currentPos +=1;
 	if (currentPos <0) currentPos = list.length -1;
 	else if (currentPos >= list.length) currentPos =0;
 	title.value = list[currentPos];
 	if (funcRes) funcRes (title.value);
+}
+// rendre les inputs interractifs
+function setInput(){
+	var inputList = document.body.getElementsByTagName ('input');
+	for (var i=0; i< inputList.length; i++){
+		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
+			inputList[i].addEventListener ('mouseleave', loadInput);
+}}
+function loadInput (event){
+	debbyPlay [slice (event.target.getAttribute ('model'), 9,-2)] = event.target.value;
+	load ();
+	event.target.addEventListener ('mouseleave', loadInput);
 }
 // affichage de base
 cleanNode = function (node){
@@ -230,6 +238,43 @@ printLinks = function(){
 		link = replace (link, '_', " ");
 		linkList[l].innerHTML = replace (linkList[l].innerHTML, '(())', link);
 }}
+function useTemplates (node){
+	// utiliser un template html
+	var templateList = node.getElementsByTagName ('template');
+	var insertList = node.getElementsByTagName ('insert');
+	for (var f=0; f< insertList.length; f++){
+		if (containsText (insertList[f].id, '.html')){
+			var xhttp = new XMLHttpRequest();
+			xhttp.open ('GET', insertList[f].id, false);
+			xhttp.send();
+			if (xhttp.status ==200){
+				insertList[f].innerHTML = xhttp.responseText;
+				insertList[f] = insertList[f].children[0];
+		}}
+		else{
+			for (var t in templateList){
+				if (templateList[t].id == insertList[f].id) insertList[f].innerHTML = templateList[t].innerHTML;
+}}}}
+useTemplateAssync = function (tagName, id){
+	var tagDst = document.getElementsByTagName (tagName)[0];
+	tagDst.style.display = 'block';
+	var templateSrc =null;
+	if (id.indexOf ('.html') >1){
+		var xhttp = new XMLHttpRequest();
+		xhttp.onreadystatechange = function(){
+			if (this.readyState == 4){
+				tagDst.innerHTML = this.responseText;
+				tagDst = tagDst.children[0];
+				init (tagDst);
+				load (tagDst);
+		}};
+		xhttp.open ('GET', id, true);
+		xhttp.send();
+	}
+	else{
+		templateSrc = document.getElementById (id);
+		tagDst.innerHTML = templateSrc.innerHTML;
+}}
 printList = function (varName, value, node){
 	// afficher une liste imbriquée
 	// récupérer les conteneurs directs
@@ -269,6 +314,7 @@ printList = function (varName, value, node){
 }
 findContainerFor = function (varName, node){
 	// retrouver le noeud contenant une liste d'objet, contenant un attribut for
+//	if (node.tagName == 'selection' || node.tagName == 'carousel') return null;
 	if (node.getAttribute ('for') && node.getAttribute ('for') == varName) return [ node ,];
 	else if (
 		! containsText (node.innerHTML, "for='" + varName +"'") &&
@@ -281,6 +327,8 @@ findContainerFor = function (varName, node){
 			for (var l in containerListTmp) containerList.push (containerListTmp[l]);
 		}
 	}
+	if (containerList.length ==0) containerList =null;
+	else if (containerList[0].tagName == 'SELECTION' ||containerList[0].tagName == 'CAROUSEL') containerList =null;
 	return containerList;
 }
 findContainerParenthesis = function (varName, node){

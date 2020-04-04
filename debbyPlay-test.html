@@ -18,7 +18,7 @@
 </style>
 </head>
 <body>
-<h1>démo du framework debby play</h1>
+<h1>démo du insertwork debby play</h1>
 <p>je veux pouvoir afficher les objets simples, les liste, les dictionnaires, ainsi que les sous-listes et sous-dictionnaires dans un template.</p>
 
 	<h2>les variables</h2>
@@ -46,26 +46,35 @@
 </p></div>
 
 	<h2>l'interractivité</h2>
+<input type='text' value='(( testEchange ))'>
+<p>vous avez entré la valeur: (( testEchange ))</p>
 <button onclick='changeColor()' style='background-color:(( color ));color:ivory'>changer ma couleur: (( color ))</button>
-<selection for='optionList'></selection>
-<carousel for='optionList'></carousel>
+<selection for='optionList' callback='chooseOption'></selection>
+<selection for='optionListBis' callback='chooseOption'></selection>
+<carousel for='optionListBis' callback='chooseOption'></carousel>
+<carousel for='optionList' callback='chooseOption'></carousel>
 <p id='choix'>option choisie: (( choix ))</p>
 
 	<h2>les templates</h2>
 <p>json: (( json.prenom )) (( json.nom ))</p>
 <div id='test-load-file'></div>
-<template id='test-id-tpl'><p>je suis le template interne</p><p>hello (( objet.prenom )) (( objet.nom ))</p></template>
-<template id='test-id-tpl-bis'>
+<insert id='tplt-local'>template locale</insert>
+<insert id='/home/lenovo/Bureau/site-dp/library-js/debbyPlay/debbyPlay-template.html'>template externe</insert>
+<template id='tplt-local'><p>je suis le template interne</p><p>hello (( objet.prenom )) (( objet.nom ))</p></template>
+<template id='tplt-local-bis'>
 	<p>je suis le template interne, deuxième version</p><p>bojour (( objet.prenom )) (( objet.nom ))</p>
 </template>
+<!--
 <test-id-tag>template locale</test-id-tag>
 <test-html-tag>template externe</test-html-tag>
-<button onclick='chooseTag("test-id-tpl")'>template n°1</button>
-<button onclick='chooseTag("test-id-tpl-bis")'>template n°2</button>
+-->
+<button onclick='chooseTag("tplt-local")'>template n°1</button>
+<button onclick='chooseTag("tplt-local-bis")'>template n°2</button>
 </body>
 <script type='text/javascript'>
 // afficher des variables
 init (document.body);
+debbyPlay.testEchange = 'coucou';
 debbyPlay.link = 'http://deborah-powers.fr/';
 debbyPlay.texte = 'bonjour';
 debbyPlay.entier = 12;
@@ -98,20 +107,16 @@ function changeColor(){
 var path = slice (document.URL, 7,-9);
 // utiliser des templates et des json
 useJson (path + 'test.json', 'json', document.body);
-load();
-useTemplate ('test-id-tag', 'test-id-tpl');
-useTemplate ('test-html-tag', path + 'template.html');
-function chooseTag (tagid){ useTemplate ('test-id-tag', tagid); }
+function chooseTag (tagid){ useTemplate ('tplt-local', tagid, document.body); }
 // afficher des sélecteurs
 debbyPlay.choix = 'poire';
 debbyPlay.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
+debbyPlay.optionListBis =[ 'choux', 'carotte', 'navet', 'oignon' ];
 function chooseOption (option){
 	console.log (option);
 	debbyPlay.choix = option;
 	load (document.getElementById ('choix'));
 }
-createSelection ('optionList', chooseOption, document.body);
-createCarousel ('optionList', chooseOption, document.body);
+load();
 </script>
 </html>
-
