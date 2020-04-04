@@ -50,7 +50,7 @@
 <p>vous avez entré la valeur: (( testEchange ))</p>
 <button onclick='changeColor()' style='background-color:(( color ));color:ivory'>changer ma couleur: (( color ))</button>
 <selection for='optionList' callback='chooseOption'></selection>
-<selection for='optionListBis' callback='chooseOption'></selection>
+<selection for='optionListBis' callback='chooseOptionBis'></selection>
 <carousel for='optionListBis' callback='chooseOption'></carousel>
 <carousel for='optionList' callback='chooseOption'></carousel>
 <p id='choix'>option choisie: (( choix ))</p>
@@ -109,7 +109,12 @@ debbyPlay.choix = 'poire';
 debbyPlay.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
 debbyPlay.optionListBis =[ 'choux', 'carotte', 'navet', 'oignon' ];
 function chooseOption (option){
-	console.log (option);
+	console.log ('uno', option);
+	debbyPlay.choix = option;
+	load (document.getElementById ('choix'));
+}
+function chooseOptionBis (option){
+	console.log ('bis', option);
 	debbyPlay.choix = option;
 	load (document.getElementById ('choix'));
 }

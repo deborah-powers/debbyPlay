@@ -18,7 +18,7 @@ load = function (node){
 	if (! node) node = document.body;
 	getModel (node);
 	for (var v in debbyPlay) printVar (v, debbyPlay[v], node);
-	setInput();
+	setInput (node);
 	printLinks();
 	createSelections (node);
 	createCarousels (node);
@@ -29,12 +29,17 @@ function createSelections (node){
 	var title, option, varName, callback;
 	for (var s=0; s< selectList.length; s++){
 		varName = selectList[s].getAttribute ('for');
-		callback = this [selectList[s].getAttribute ('callback')];
 		title = createNode ('p', "", selectList[s]);
 		for (var v in debbyPlay[varName]){
 			option = createNode ('option', debbyPlay[varName][v], selectList[s], null, null, v);
 			option.addEventListener ('click', updateSelection);
-			if (callback) option.addEventListener ('click', function (event){ callback (event.target.innerText.toLowerCase()) });
+			if (this [selectList[s].getAttribute ('callback')]){
+				var that = this;
+				option.addEventListener ('click', function (event){
+					var callback = event.target.parentElement.getAttribute ('callback');
+					that[callback] (event.target.innerText.toLowerCase());
+				});
+			}
 		}
 		title.innerHTML = debbyPlay[varName][0];
 		title.id =0;
@@ -184,8 +189,8 @@ setAfter = function (event, funcRes){
 	if (funcRes) funcRes (title.value);
 }
 // rendre les inputs interractifs
-function setInput(){
-	var inputList = document.body.getElementsByTagName ('input');
+function setInput (node){
+	var inputList = node.getElementsByTagName ('input');
 	for (var i=0; i< inputList.length; i++){
 		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
 			inputList[i].addEventListener ('mouseleave', loadInput);
