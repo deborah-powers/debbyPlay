@@ -196,8 +196,13 @@ function setInput (node){
 			inputList[i].addEventListener ('mouseleave', loadInput);
 }}
 function loadInput (event){
-	debbyPlay [slice (event.target.getAttribute ('model'), 9,-2)] = event.target.value;
-	load ();
+	var varName = slice (event.target.getAttribute ('model'), 9,-2);
+	debbyPlay [varName] = event.target.value;
+	for (var c=0; c< document.body.children.length; c++){
+		if (document.body.children[c].tagName != 'SCRIPT' && document.body.children[c].getAttribute ('model')
+			&& containsText (document.body.children[c].getAttribute ('model'), '{{'+ varName +'}}'))
+			load (document.body.children[c]);
+	}
 	event.target.addEventListener ('mouseleave', loadInput);
 }
 // affichage de base
