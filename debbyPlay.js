@@ -194,15 +194,17 @@ function setInput (node){
 	for (var i=0; i< inputList.length; i++){
 		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
 			inputList[i].addEventListener ('mouseleave', loadInput);
+	}
+	inputList = node.getElementsByTagName ('textarea');
+	for (var i=0; i< inputList.length; i++){
+		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
+			inputList[i].addEventListener ('mouseleave', loadInput);
 }}
 function loadInput (event){
 	var varName = slice (event.target.getAttribute ('model'), 9,-2);
 	debbyPlay [varName] = event.target.value;
-	for (var c=0; c< document.body.children.length; c++){
-		if (document.body.children[c].tagName != 'SCRIPT' && document.body.children[c].getAttribute ('model')
-			&& containsText (document.body.children[c].getAttribute ('model'), '{{'+ varName +'}}'))
-			load (document.body.children[c]);
-	}
+	var nodeList = findContainerModel (varName, document.body);
+	for (var n=0; n< nodeList.length; n++) load (nodeList[n]);
 	event.target.addEventListener ('mouseleave', loadInput);
 }
 // affichage de base
@@ -289,36 +291,36 @@ printList = function (varName, value, node){
 	// afficher une liste imbriquée
 	// récupérer les conteneurs directs
 	if (typeof (value) != 'object' || ! value[0]) return;
-	var containerList = findContainerParenthesis (varName, node);
-	if (! containerList) containerList =[];
-	var containerListTmp = findContainerFor (varName, node);
-	if (containerListTmp){
-		for (var c in containerListTmp) containerList.push (containerListTmp[c]);
+	var nodeList = findContainerParenthesis (varName, node);
+	if (! nodeList) nodeList =[];
+	var nodeListTmp = findContainerFor (varName, node);
+	if (nodeListTmp){
+		for (var c in nodeListTmp) nodeList.push (nodeListTmp[c]);
 	}
-	if (! containerList) return;
+	if (! nodeList) return;
 	// récupérer les conteneurs parents, pour les listes imbriquées
 	var v=0, container;
 	if (value[0][0]){
-		for (var l in containerList){
-			containerList[l] = findContainerList (value, containerList[l]);
+		for (var l in nodeList){
+			nodeList[l] = findContainerList (value, nodeList[l]);
 			for (v=0; v< value.length -1; v++){
-				container = copyNode (containerList[l]);
+				container = copyNode (nodeList[l]);
 				printVar (varName, value[v], container);
 				printVar ("", value[v], container);
 			}
-			printVar (varName, value[v], containerList[l]);
-			printVar ("", value[v], containerList[l]);
+			printVar (varName, value[v], nodeList[l]);
+			printVar ("", value[v], nodeList[l]);
 		}
 	}
 	// liste de dictionnaires
 	else{
-		for (var c in containerList){
+		for (var c in nodeList){
 			v=0;
 			for (v=0; v< value.length -1; v++){
-				containerTmp = copyNode (containerList[c]);
+				containerTmp = copyNode (nodeList[c]);
 				for (var w in value[v]) printVar (w, value[v][w], containerTmp);
 			}
-			for (var w in value[v]) printVar (w, value[v][w], containerList[c]);
+			for (var w in value[v]) printVar (w, value[v][w], nodeList[c]);
 		}
 	}
 }
@@ -329,37 +331,56 @@ findContainerFor = function (varName, node){
 	else if (
 		! containsText (node.innerHTML, "for='" + varName +"'") &&
 		! containsText (node.innerHTML, 'for="' + varName +'"')) return null;
-	var containerList =[];
-	var containerListTmp =[];
+	var nodeList =[];
+	var nodeListTmp =[];
 	for (var c=0; c< node.children.length; c++){
-		containerListTmp = findContainerFor (varName, node.children[c]);
-		if (containerListTmp){
-			for (var l in containerListTmp) containerList.push (containerListTmp[l]);
+		nodeListTmp = findContainerFor (varName, node.children[c]);
+		if (nodeListTmp){
+			for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
 		}
 	}
-	if (containerList.length ==0) containerList =null;
-	else if (containerList[0].tagName == 'SELECTION' ||containerList[0].tagName == 'CAROUSEL') containerList =null;
-	return containerList;
+	if (nodeList.length ==0) nodeList =null;
+	else if (nodeList[0].tagName == 'SELECTION' || nodeList[0].tagName == 'CAROUSEL') nodeList =null;
+	return nodeList;
+}
+function findContainerModel (varName, node){
+	if (! node) node = document.body;
+	var model = node.getAttribute ('model');
+	if (! model || ! containsText (model, '{{'+ varName +'}}')) return [];
+	var nodeList =[];
+	var nbOcurencies = count (model, '{{'+ varName +'}}');
+	var c=0;
+	while (nbOcurencies >0 && c< node.children.length){
+		if (node.children[c].getAttribute ('model') && containsText (node.children[c].getAttribute ('model'), '{{'+ varName +'}}')){
+			nodeListTmp = findContainerModel (varName, node.children[c]);
+			if (nodeListTmp && nodeListTmp.length >0){
+				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
+				nbOcurencies -= count (node.children[c].getAttribute ('model'), '{{'+ varName +'}}');
+		}}
+		c++;
+	}
+	if (nbOcurencies) nodeList.push (node);
+	return nodeList;
 }
 findContainerParenthesis = function (varName, node){
 	// retrouver le noeud contenant directement la variable, avec les parenthèses
 	if (! containsText (node.outerHTML, '(('+ varName +'))')) return null;
 	var nbOcurencies = count (node.outerHTML, '(('+ varName +'))');
-	var containerList =[];
-	var containerListTmp =[];
+	var nodeList =[];
+	var nodeListTmp =[];
 	var c=0;
 	while (nbOcurencies >0 && c< node.children.length){
 		if (containsText (node.children[c].outerHTML, '(('+ varName +'))')){
-			containerListTmp = findContainerParenthesis (varName, node.children[c]);
-			if (containerListTmp && containerListTmp.length >0){
-				for (var l in containerListTmp) containerList.push (containerListTmp[l]);
+			nodeListTmp = findContainerParenthesis (varName, node.children[c]);
+			if (nodeListTmp && nodeListTmp.length >0){
+				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
 				nbOcurencies -= count (node.children[c].outerHTML, '(('+ varName +'))');
 			}
 		}
 		c++;
 	}
-	if (nbOcurencies) containerList.push (node);
-	return containerList;
+	if (nbOcurencies) nodeList.push (node);
+	return nodeList;
 }
 findContainerList = function (value, node){
 	/* vérifier si une liste est imbriquée
