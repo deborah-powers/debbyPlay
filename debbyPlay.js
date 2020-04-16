@@ -57,6 +57,13 @@ function createCarousels (node){
 		before.addEventListener ('click', function (evt){ setBefore (evt, callback) });
 		after.addEventListener ('click', function (evt){ setAfter (evt, callback) });
 }}
+showSelectionTitle = function (selection, option){
+	/* lorsque le changement d'option necéssite de recharger le conteneur de la sélection,
+	le titre affiché reprend la valeur par défaut, et non celle de l'option sélectionnée.
+	showTitle est appelée après le rechargement (load) et permet d'afficher la bonne option.
+	*/
+	selection.children[0].innerHTML = option;
+}
 useTemplate = function (idInsert, idTemplate, node){
 	// utiliser un template html
 	if (! node) node = document.body;

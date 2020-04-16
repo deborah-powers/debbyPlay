@@ -1,14 +1,15 @@
 /* donner du style à mon exemple */
 :root {
-	--button-bg: #903;
-	--button-height: 2em;
-	--button-bg-hover: var(--button-bg);
+	--text-color: #603;
 	--button-color: ivory;
 	--button-color-hover: var(--button-color);
+	--button-bg: #C36;
+	--button-bg-hover: #399;
 	--button-border: none;
-	--option-size: 1em;
+	--input-bg: #FCC;
+	--foldable-border: solid;
 }
-html { background-color: #903; }
+html { background-color: var(--button-bg); }
 body {
 	margin: auto;
 	font-size: 1em;
@@ -58,7 +59,8 @@ button {
 	padding: 0.2em;
 	padding-top: 0;
 	color: var(--button-color, ivory);
-	background-color: var(--button-bg, #903);
-	border-style: var(--button-border, none);
+	background-color: var(--button-bg, #C36);
+	border-style: none;
 }
-input { background-color: #F99; }
+button:hover { background-color: var(--button-bg-hover, #399); }
+input { background-color: var(--input-bg, #FCC); }
