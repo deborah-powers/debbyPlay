@@ -253,6 +253,17 @@ printLinks = function(){
 			d= rindex (link, '.');
 			link = slice (link, 0,d);
 		}
+		console.log (link);
+		if (containsText (link, '.')){
+			d= rindex (link, '.');
+			if (d == link.length -1){
+				link = slice (link, 0,d);
+				d= rindex (link, '.');
+			}
+			d=d+1;
+			link = slice (link, d);
+		}
+		if (link[0] =='#') link = slice (link, 1);
 		link = replace (link, '-', " ");
 		link = replace (link, '_', " ");
 		linkList[l].innerHTML = replace (linkList[l].innerHTML, '(())', link);
