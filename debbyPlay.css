@@ -39,6 +39,11 @@ carousel p	{
 	background-color: var(--button-bg, #DDD);
 	color: var(--button-color, black);
 }
-carousel input	{
-	outline: none;
+carousel input	{	outline: none;	}
+calendar selection {
+	display: grid;
+	grid-template-columns: 1fr 1fr 1fr;
 }
+calendar selection p {	grid-column: 1/4;	}
+calendar selection:nth-child(3) {	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;	}
+calendar selection:nth-child(3) p {	grid-column: 1/8;	}

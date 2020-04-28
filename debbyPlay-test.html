@@ -18,6 +18,7 @@
 </style>
 </head>
 <body>
+<calendar callback='chooseDate'></calendar><p id='date'>date: (( date ))</p>
 <h1>démo du framework debby play</h1>
 <p>je veux pouvoir afficher les objets simples, les liste, les dictionnaires, ainsi que les sous-listes et sous-dictionnaires dans un template.</p>
 
@@ -108,6 +109,7 @@ function chooseTag (tagid){ useTemplate ('tplt-local', tagid, document.body); }
 debbyPlay.choix = 'poire';
 debbyPlay.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
 debbyPlay.optionListBis =[ 'choux', 'carotte', 'navet', 'oignon' ];
+
 function chooseOption (option){
 	console.log ('uno', option);
 	debbyPlay.choix = option;
@@ -118,6 +120,14 @@ function chooseOptionBis (option){
 	debbyPlay.choix = option;
 	load (document.getElementById ('choix'));
 }
+
+debbyPlay.date = 'coucou';
+function chooseDate (year, month, monthNb, day){
+	debbyPlay.date = year +'/'+ month +'/'+ monthNb +'/'+ day;
+	load (document.getElementById ('date'));
+}
 load();
+
+createCalendar (document.body);
 </script>
 </html>

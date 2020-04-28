@@ -6,8 +6,14 @@ dépendence: display.css
 
 ________________________ fonctions utilisable par vous ________________________ */
 
+
 // affichage de base
-var debbyPlay ={};
+var debbyPlay ={
+	// constantes pour afficher un popup de calendrier
+	yearList: [ '2018', '2019', '2020' ],
+	monthList: [ 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre' ],
+	dayList: [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31' ]
+};
 init = function (node){
 	if (! node) node = document.body;
 	useTemplates (node);
@@ -19,12 +25,13 @@ load = function (node){
 	getModel (node);
 	for (var v in debbyPlay) printVar (v, debbyPlay[v], node);
 	setInput (node);
-	printLinks();
-	createSelections (node);
-	createCarousels (node);
+	printLink();
+	createSelection (node);
+	createCarousel (node);
+//	createCalendar (node);
 }
 // afficher des sélecteurs. la target de funcRes est une string
-function createSelections (node){
+function createSelection (node){
 	var selectList = node.getElementsByTagName ('selection');
 	var title, option, varName, callback;
 	for (var s=0; s< selectList.length; s++){
@@ -44,7 +51,7 @@ function createSelections (node){
 		title.innerHTML = debbyPlay[varName][0];
 		title.id =0;
 }}
-function createCarousels (node){
+function createCarousel (node){
 	var selectList = node.getElementsByTagName ('carousel');
 	var title, varName, callback, before, after, option;
 	for (var s=0; s< selectList.length; s++){
@@ -64,6 +71,56 @@ showSelectionTitle = function (selection, option){
 	*/
 	selection.children[0].innerHTML = option;
 }
+// fonction pour afficher un calendrier
+function createCalendar (node){
+	// le callback a pour arguments: int year, string month, int monthId, int day
+	const month31 = 'janvier mars mai juillet aout octobre decembre';
+	const month30 = 'avril juin septembre novembre';
+	var calList = node.getElementsByTagName ('calendar');
+	for (var s=0; s< calList.length; s++){
+		var years = createNode ('carousel', "", calList[s]);
+		years.setAttribute ('for', 'yearList');
+		var months = createNode ('selection', "", calList[s]);
+		months.setAttribute ('for', 'monthList');
+		var days = createNode ('selection', "", calList[s]);
+		days.setAttribute ('for', 'dayList');
+		calList[s].addEventListener ('click', function (event){
+			var month = event.target.parentElement.parentElement.getElementsByTagName ('p')[2].innerText.toLowerCase();
+			var monthNb =28;
+			debbyPlay.dayList =[];
+			if (month31.indexOf (month) >=0) monthNb =31;
+			else if (month30.indexOf (month) >=0) monthNb =30;
+			else{
+				var year = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('input')[0].value);
+				if (year %400 ==0 || (year %100 >0 && year %4==0)) monthNb =29;
+			}
+			var dayList = event.target.parentElement.parentElement.lastChild;
+			var currentNb = parseInt (dayList.lastChild.innerText);
+			if (currentNb < monthNb){
+				currentNb = currentNb +1;
+				for (var currentNb; currentNb <= monthNb; currentNb ++)
+					var option = createNode ('option', currentNb, dayList, null, null, currentNb);
+			}
+			else if (currentNb > monthNb){
+				var strNb = monthNb.toString();
+				while (dayList.lastChild.innerText > strNb) dayList.removeChild (dayList.lastChild);
+			}
+		});
+		if (calList[s].getAttribute ('callback')){
+			var that = this;
+			calList[s].addEventListener ('click', function (event){
+				var year = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('input')[0].value);
+				var month = event.target.parentElement.parentElement.getElementsByTagName ('p')[2].innerText.toLowerCase();
+				var monthId =1+ parseInt (event.target.parentElement.parentElement.getElementsByTagName ('p')[2].id);
+				var day = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('p')[3].innerText);
+				var callback = event.target.parentElement.parentElement.getAttribute ('callback');
+				that[callback] (year, month, monthId, day);
+			});
+		}
+		createCarousel (calList[s]);
+		createSelection (calList[s]);
+}}
+// utiliser un template
 useTemplate = function (idInsert, idTemplate, node){
 	// utiliser un template html
 	if (! node) node = document.body;
@@ -238,7 +295,7 @@ printVar = function (varName, value, node){
 			for (var v in value) printVar (varName +'.'+v, value[v], node);
 	}
 }
-printLinks = function(){
+printLink = function(){
 	var linkList = document.getElementsByTagName ('a');
 	var link = null, d;
 	for (var l=0; l< linkList.length; l++){
@@ -253,7 +310,6 @@ printLinks = function(){
 			d= rindex (link, '.');
 			link = slice (link, 0,d);
 		}
-		console.log (link);
 		if (containsText (link, '.')){
 			d= rindex (link, '.');
 			if (d == link.length -1){
