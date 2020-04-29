@@ -42,6 +42,7 @@ carousel input	{	outline: none;	}
 calendar selection {
 	display: grid;
 	grid-template-columns: 1fr 1fr 1fr;
+	text-align: center;
 }
 calendar selection p {	grid-column: 1/4;	}
 calendar p:before		{	content: none;	}
