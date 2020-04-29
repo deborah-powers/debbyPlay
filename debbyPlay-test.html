@@ -1,6 +1,4 @@
-<!doctype html>
-<html>
-<head>
+<!doctype html><html><head>
 <title>démo de debby play</title>
 <meta name='viewport' content='width=device-width,initial-scale=1'/>
 <meta charset='utf-8'/>
@@ -15,10 +13,7 @@
 		padding: 0.5em;
 	}
 	.colored { color: #033; }
-</style>
-</head>
-<body>
-<calendar callback='chooseDate'></calendar><p id='date'>date: (( date ))</p>
+</style></head><body>
 <h1>démo du framework debby play</h1>
 <p>je veux pouvoir afficher les objets simples, les liste, les dictionnaires, ainsi que les sous-listes et sous-dictionnaires dans un template.</p>
 
@@ -55,6 +50,7 @@
 <carousel for='optionListBis' callback='chooseOption'></carousel>
 <carousel for='optionList' callback='chooseOption'></carousel>
 <p id='choix'>option choisie: (( choix ))</p>
+<calendar callback='chooseDate'></calendar><p id='date'>date: (( date ))</p>
 
 	<h2>les templates</h2>
 <p>json: (( json.prenom )) (( json.nom ))</p>
@@ -67,8 +63,7 @@
 </template>
 <button onclick='chooseTag("tplt-local")'>template n°1</button>
 <button onclick='chooseTag("tplt-local-bis")'>template n°2</button>
-</body>
-<script type='text/javascript'>
+</body><script type='text/javascript'>
 // afficher des variables
 init (document.body);
 debbyPlay.testEchange = 'coucou';
@@ -126,5 +121,4 @@ function chooseDate (year, month, monthNb, day){
 	load (document.getElementById ('date'));
 }
 load();
-</script>
-</html>
+</script></html>
