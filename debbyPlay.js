@@ -26,9 +26,9 @@ load = function (node){
 	for (var v in debbyPlay) printVar (v, debbyPlay[v], node);
 	setInput (node);
 	printLink();
+	createCalendar (node);
 	createSelection (node);
 	createCarousel (node);
-//	createCalendar (node);
 }
 // afficher des sélecteurs. la target de funcRes est une string
 function createSelection (node){
@@ -116,10 +116,7 @@ function createCalendar (node){
 				var callback = event.target.parentElement.parentElement.getAttribute ('callback');
 				that[callback] (year, month, monthId, day);
 			});
-		}
-		createCarousel (calList[s]);
-		createSelection (calList[s]);
-}}
+}}}
 // utiliser un template
 useTemplate = function (idInsert, idTemplate, node){
 	// utiliser un template html

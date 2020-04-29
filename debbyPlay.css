@@ -1,5 +1,4 @@
 /* mettre en forme certains éléments de mon cadriciel display. */
-
 template	{	display: none;	}
 insert		{	display: block;	}
 selection	{
@@ -45,5 +44,6 @@ calendar selection {
 	grid-template-columns: 1fr 1fr 1fr;
 }
 calendar selection p {	grid-column: 1/4;	}
+calendar p:before		{	content: none;	}
 calendar selection:nth-child(3) {	grid-template-columns: 1fr 1fr 1fr 1fr 1fr 1fr 1fr;	}
 calendar selection:nth-child(3) p {	grid-column: 1/8;	}
