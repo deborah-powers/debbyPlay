@@ -45,12 +45,16 @@
 <input type='text' value='(( testEchange ))'>
 <p>vous avez entré la valeur: (( testEchange ))</p>
 <button onclick='changeColor()' style='background-color:(( color ));color:ivory'>changer ma couleur: (( color ))</button>
-<selection for='optionList' callback='chooseOption'></selection>
-<selection for='optionListBis' callback='chooseOptionBis'></selection>
-<carousel for='optionListBis' callback='chooseOption'></carousel>
-<carousel for='optionList' callback='chooseOption'></carousel>
+<selection callback='chooseOption'>optionList</selection>
+<selection callback='chooseOptionBis'>optionListBis</selection>
+<carousel callback='chooseOption'>optionList</carousel>
+<carousel callback='chooseOption'>optionListBis</carousel>
 <p id='choix'>option choisie: (( choix ))</p>
 <calendar callback='chooseDate'></calendar><p id='date'>date: (( date ))</p>
+<!--
+<selection for='optionList' callback='chooseOption'></selection>
+<carousel for='optionList' callback='chooseOption'></carousel>
+-->
 
 	<h2>les templates</h2>
 <p>json: (( json.prenom )) (( json.nom ))</p>

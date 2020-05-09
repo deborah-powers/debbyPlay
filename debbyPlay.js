@@ -35,7 +35,9 @@ function createSelection (node){
 	var selectList = node.getElementsByTagName ('selection');
 	var title, option, varName, callback;
 	for (var s=0; s< selectList.length; s++){
-		varName = selectList[s].getAttribute ('for');
+		varName = selectList[s].innerText[0].toLowerCase() + selectList[s].innerText.slice (1);
+		selectList[s].innerHTML ="";
+	//	varName = selectList[s].getAttribute ('for');
 		title = createNode ('p', "", selectList[s]);
 		for (var v in debbyPlay[varName]){
 			option = createNode ('option', debbyPlay[varName][v], selectList[s], null, null, v);
@@ -55,8 +57,12 @@ function createCarousel (node){
 	var selectList = node.getElementsByTagName ('carousel');
 	var title, varName, callback, before, after, option;
 	for (var s=0; s< selectList.length; s++){
-		varName = selectList[s].getAttribute ('for');
-		callback = this [selectList[s].getAttribute ('callback')];
+		varName = selectList[s].innerText[0].toLowerCase() + selectList[s].innerText.slice (1);
+		selectList[s].innerHTML ="";
+		selectList[s].setAttribute ('for', varName);
+	//	varName = selectList[s].getAttribute ('for');
+		callback = null;
+		if (this [selectList[s].getAttribute ('callback')]) callback = this [selectList[s].getAttribute ('callback')];
 		before = createNode ('p', '<', selectList[s]);
 		title = createInput ('text', debbyPlay[varName][0], selectList[s]);
 		after = createNode ('p', '>', selectList[s]);
@@ -79,11 +85,14 @@ function createCalendar (node){
 	var calList = node.getElementsByTagName ('calendar');
 	for (var s=0; s< calList.length; s++){
 		var years = createNode ('carousel', "", calList[s]);
-		years.setAttribute ('for', 'yearList');
+		years.innerHTML = 'yearList';
+	//	years.setAttribute ('for', 'yearList');
 		var months = createNode ('selection', "", calList[s]);
-		months.setAttribute ('for', 'monthList');
+		months.innerHTML = 'monthList';
+	//	months.setAttribute ('for', 'monthList');
 		var days = createNode ('selection', "", calList[s]);
-		days.setAttribute ('for', 'dayList');
+		days.innerHTML = 'dayList';
+	//	days.setAttribute ('for', 'dayList');
 		calList[s].addEventListener ('click', function (event){
 			var month = event.target.parentElement.parentElement.getElementsByTagName ('p')[2].innerText.toLowerCase();
 			var monthNb =28;
