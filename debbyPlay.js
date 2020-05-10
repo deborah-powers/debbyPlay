@@ -61,14 +61,23 @@ function createCarousel (node){
 		selectList[s].innerHTML ="";
 		selectList[s].setAttribute ('for', varName);
 	//	varName = selectList[s].getAttribute ('for');
-		callback = null;
-		if (this [selectList[s].getAttribute ('callback')]) callback = this [selectList[s].getAttribute ('callback')];
 		before = createNode ('p', '<', selectList[s]);
 		title = createInput ('text', debbyPlay[varName][0], selectList[s]);
 		after = createNode ('p', '>', selectList[s]);
-		title.addEventListener ('click', function (evt){ setCurrent (evt, callback) });
-		before.addEventListener ('click', function (evt){ setBefore (evt, callback) });
-		after.addEventListener ('click', function (evt){ setAfter (evt, callback) });
+		callback = null;
+		var that = this;
+		title.addEventListener ('click', function (event){
+			if (event.target.parentElement.getAttribute ('callback')) callback = that [event.target.parentElement.getAttribute ('callback')];
+			setCurrent (event, callback);
+		});
+		before.addEventListener ('click', function (event){
+			if (event.target.parentElement.getAttribute ('callback')) callback = that [event.target.parentElement.getAttribute ('callback')];
+			setBefore (event, callback);
+		});
+		after.addEventListener ('click', function (event){
+			if (event.target.parentElement.getAttribute ('callback')) callback = that [event.target.parentElement.getAttribute ('callback')];
+			setAfter (event, callback);
+		});
 }}
 showSelectionTitle = function (selection, option){
 	/* lorsque le changement d'option necéssite de recharger le conteneur de la sélection,
