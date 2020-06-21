@@ -6,6 +6,7 @@ dépendence: display.css
 
 ________________________ fonctions utilisable par vous ________________________ */
 
+
 // affichage de base
 var debbyPlay ={
 	// constantes pour afficher un popup de calendrier
@@ -13,23 +14,25 @@ var debbyPlay ={
 	monthList: [ 'janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'aout', 'septembre', 'octobre', 'novembre', 'decembre' ],
 	dayList: [ '01', '02', '03', '04', '05', '06', '07', '08', '09', '10', '11', '12', '13', '14', '15', '16', '17', '18', '19', '20', '21', '22', '23', '24', '25', '26', '27', '28', '29', '30', '31' ]
 };
-HTMLElement.prototype.init = function(){
-	this.useTemplates();
-	this.clean();
-	this.setModel();
+init = function (node){
+	if (! node) node = document.body;
+	useTemplates (node);
+	cleanNode (node);
+	setModel (node);
 }
-HTMLElement.prototype.load = function(){
-	this.getModel();
-	for (var v in debbyPlay) this.printVar (v, debbyPlay[v]);
-	this.setInput();
+load = function (node){
+	if (! node) node = document.body;
+	getModel (node);
+	for (var v in debbyPlay) printVar (v, debbyPlay[v], node);
+	setInput (node);
 	printLink();
-	this.createCalendar();
-	this.createSelection();
-	this.createCarousel();
+	createCalendar (node);
+	createSelection (node);
+	createCarousel (node);
 }
 // afficher des sélecteurs. la target de funcRes est une string
-HTMLElement.prototype.createSelection = function(){
-	var selectList = this.getElementsByTagName ('selection');
+function createSelection (node){
+	var selectList = node.getElementsByTagName ('selection');
 	var title, option, varName, callback;
 	for (var s=0; s< selectList.length; s++){
 		varName = selectList[s].innerText[0].toLowerCase() + selectList[s].innerText.slice (1);
@@ -39,15 +42,19 @@ HTMLElement.prototype.createSelection = function(){
 		for (var v in debbyPlay[varName]){
 			option = createNode ('option', debbyPlay[varName][v], selectList[s], null, null, v);
 			option.addEventListener ('click', updateSelection);
-			if (window [selectList[s].getAttribute ('callback')]) option.addEventListener ('click', function (event){
-				var callback = event.target.parentElement.getAttribute ('callback');
-				window[callback] (event.target.innerText.toLowerCase());
-		});}
+			if (this [selectList[s].getAttribute ('callback')]){
+				var that = this;
+				option.addEventListener ('click', function (event){
+					var callback = event.target.parentElement.getAttribute ('callback');
+					that[callback] (event.target.innerText.toLowerCase());
+				});
+			}
+		}
 		title.innerHTML = debbyPlay[varName][0];
 		title.id =0;
 }}
-HTMLElement.prototype.createCarousel = function(){
-	var selectList = this.getElementsByTagName ('carousel');
+function createCarousel (node){
+	var selectList = node.getElementsByTagName ('carousel');
 	var title, varName, callback, before, after, option;
 	for (var s=0; s< selectList.length; s++){
 		varName = selectList[s].innerText[0].toLowerCase() + selectList[s].innerText.slice (1);
@@ -58,16 +65,17 @@ HTMLElement.prototype.createCarousel = function(){
 		title = createInput ('text', debbyPlay[varName][0], selectList[s]);
 		after = createNode ('p', '>', selectList[s]);
 		callback = null;
+		var that = this;
 		title.addEventListener ('click', function (event){
-			if (event.target.parentElement.getAttribute ('callback')) callback = window [event.target.parentElement.getAttribute ('callback')];
+			if (event.target.parentElement.getAttribute ('callback')) callback = that [event.target.parentElement.getAttribute ('callback')];
 			setCurrent (event, callback);
 		});
 		before.addEventListener ('click', function (event){
-			if (event.target.parentElement.getAttribute ('callback')) callback = window [event.target.parentElement.getAttribute ('callback')];
+			if (event.target.parentElement.getAttribute ('callback')) callback = that [event.target.parentElement.getAttribute ('callback')];
 			setBefore (event, callback);
 		});
 		after.addEventListener ('click', function (event){
-			if (event.target.parentElement.getAttribute ('callback')) callback = window [event.target.parentElement.getAttribute ('callback')];
+			if (event.target.parentElement.getAttribute ('callback')) callback = that [event.target.parentElement.getAttribute ('callback')];
 			setAfter (event, callback);
 		});
 }}
@@ -79,11 +87,11 @@ showSelectionTitle = function (selection, option){
 	selection.children[0].innerHTML = option;
 }
 // fonction pour afficher un calendrier
-HTMLElement.prototype.createCalendar = function(){
+function createCalendar (node){
 	// le callback a pour arguments: int year, string month, int monthId, int day
 	const month31 = 'janvier mars mai juillet aout octobre decembre';
 	const month30 = 'avril juin septembre novembre';
-	var calList = this.getElementsByTagName ('calendar');
+	var calList = node.getElementsByTagName ('calendar');
 	for (var s=0; s< calList.length; s++){
 		var years = createNode ('carousel', "", calList[s]);
 		years.innerHTML = 'yearList';
@@ -114,19 +122,24 @@ HTMLElement.prototype.createCalendar = function(){
 			else if (currentNb > monthNb){
 				var strNb = monthNb.toString();
 				while (dayList.lastChild.innerText > strNb) dayList.removeChild (dayList.lastChild);
-		}});
-		if (calList[s].getAttribute ('callback')) calList[s].addEventListener ('click', function (event){
-			var year = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('input')[0].value);
-			var month = event.target.parentElement.parentElement.getElementsByTagName ('p')[2].innerText.toLowerCase();
-			var monthId =1+ parseInt (event.target.parentElement.parentElement.getElementsByTagName ('p')[2].id);
-			var day = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('p')[3].innerText);
-			var callback = event.target.parentElement.parentElement.getAttribute ('callback');
-			window[callback] (year, month, monthId, day);
-});}}
+			}
+		});
+		if (calList[s].getAttribute ('callback')){
+			var that = this;
+			calList[s].addEventListener ('click', function (event){
+				var year = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('input')[0].value);
+				var month = event.target.parentElement.parentElement.getElementsByTagName ('p')[2].innerText.toLowerCase();
+				var monthId =1+ parseInt (event.target.parentElement.parentElement.getElementsByTagName ('p')[2].id);
+				var day = parseInt (event.target.parentElement.parentElement.getElementsByTagName ('p')[3].innerText);
+				var callback = event.target.parentElement.parentElement.getAttribute ('callback');
+				that[callback] (year, month, monthId, day);
+			});
+}}}
 // utiliser un template
-HTMLElement.prototype.useTemplate = function (idInsert, idTemplate){
+useTemplate = function (idInsert, idTemplate, node){
 	// utiliser un template html
-	var insertList = this.getElementsByTagName ('insert');
+	if (! node) node = document.body;
+	var insertList = node.getElementsByTagName ('insert');
 	var insert;
 	for (i in insertList) if (insertList[i].id == idInsert) insert = insertList[i];
 	if (containsText (idTemplate, '.html')){
@@ -138,7 +151,7 @@ HTMLElement.prototype.useTemplate = function (idInsert, idTemplate){
 			insert = insert.children[0];
 	}}
 	else{
-		var templateList = this.getElementsByTagName ('template');
+		var templateList = node.getElementsByTagName ('template');
 		var template;
 		for (var t in templateList) if (templateList[t].id == idTemplate) template = templateList[t];
 		insert.innerHTML = template.innerHTML;
@@ -198,48 +211,52 @@ useBackend = function (url, varName, params){
 // ________________________ fonctions appelées dans les précédentes ________________________
 
 // conserver le template de la page afin de la recharger
-HTMLElement.prototype.setModel = function(){
-	if (this.tagName == 'SCRIPT') return;
-	else if (containsText (this.outerHTML, '))')){
+function setModel (node){
+	if (node.tagName == 'SCRIPT') return;
+	else if (containsText (node.outerHTML, '))')){
 		var attributeList ="";
 		var modelTmp;
-		if (containsText (this.innerHTML, '))')){
-			modelTmp = copyText (this.innerHTML);
+		if (containsText (node.innerHTML, '))')){
+			modelTmp = copyText (node.innerHTML);
 			modelTmp = replace (modelTmp, '((', '{{');
 			modelTmp = replace (modelTmp, '))', '}}');
 			attributeList = attributeList +'$body:'+ modelTmp;
 		}
-		for (var a in this.attributes) if (typeof (this.attributes[a].value) == 'string' && this.attributes[a].name != 'model'
-				&& containsText (this.attributes[a].value, '))')){
-			modelTmp = copyText (this.attributes[a].value);
-			modelTmp = replace (modelTmp, '((', '{{');
-			modelTmp = replace (modelTmp, '))', '}}');
-			attributeList = attributeList +'$'+ this.attributes[a].name +':'+ modelTmp;
+		for (var a in node.attributes){
+			if (typeof (node.attributes[a].value) == 'string' && node.attributes[a].name != 'model' && containsText (node.attributes[a].value, '))')){
+				modelTmp = copyText (node.attributes[a].value);
+				modelTmp = replace (modelTmp, '((', '{{');
+				modelTmp = replace (modelTmp, '))', '}}');
+				attributeList = attributeList +'$'+ node.attributes[a].name +':'+ modelTmp;
+			}
 		}
-		this.setAttribute ('model', attributeList);
-		for (var c=0; c< this.children.length; c++) if (this.tagName != 'SCRIPT') this.children[c].setModel();
-}}
-HTMLElement.prototype.getModel = function(){
-	if (this.getAttribute ('model')){
+		node.setAttribute ('model', attributeList);
+		for (var c=0; c< node.children.length; c++){
+			if (node.tagName != 'SCRIPT') setModel (node.children[c]);
+		}
+	}
+}
+function getModel (node){
+	if (node.getAttribute ('model')){
 		var modelTmp ="";
 		var d=0;
-		var attributeList = split (this.getAttribute ('model'), '$');
+		var attributeList = split (node.getAttribute ('model'), '$');
 		var trash = attributeList.shift();
 		if (slice (attributeList[0], 0,5) == 'body:'){
 			modelTmp = slice (attributeList[0], 5);
 			modelTmp = replace (modelTmp, '{{', '((');
 			modelTmp = replace (modelTmp, '}}', '))');
-			this.innerHTML = modelTmp;
+			node.innerHTML = modelTmp;
 			trash = attributeList.shift();
 		}
-		for (var a=0; a< attributeList.length; a++){
+		for (var a in attributeList){
 			d= index (attributeList[a], ':');
 			modelTmp = slice (attributeList[a], d+1);
 			modelTmp = replace (modelTmp, '{{', '((');
 			modelTmp = replace (modelTmp, '}}', '))');
-			this.setAttribute (slice (attributeList[a], 0,d), modelTmp);
+			node.setAttribute (slice (attributeList[a], 0,d), modelTmp);
 		}
-		this.setModel();
+		setModel (node);
 }}
 // fonctions gérant mes sélecteurs
 updateSelection = function (event){
@@ -278,13 +295,13 @@ setAfter = function (event, funcRes){
 	if (funcRes) funcRes (title.value);
 }
 // rendre les inputs interractifs
-HTMLElement.prototype.setInput = function(){
-	var inputList = this.getElementsByTagName ('input');
+function setInput (node){
+	var inputList = node.getElementsByTagName ('input');
 	for (var i=0; i< inputList.length; i++){
 		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
 			inputList[i].addEventListener ('mouseleave', loadInput);
 	}
-	inputList = this.getElementsByTagName ('textarea');
+	inputList = node.getElementsByTagName ('textarea');
 	for (var i=0; i< inputList.length; i++){
 		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
 			inputList[i].addEventListener ('mouseleave', loadInput);
@@ -293,26 +310,32 @@ function loadInput (event){
 	var varName = slice (event.target.getAttribute ('model'), 9,-2);
 	debbyPlay [varName] = event.target.value;
 	var nodeList = findContainerModel (varName, document.body);
-	for (var n=0; n< nodeList.length; n++) nodeList[n].load();
+	for (var n=0; n< nodeList.length; n++) load (nodeList[n]);
 	event.target.addEventListener ('mouseleave', loadInput);
 }
 // affichage de base
-HTMLElement.prototype.clean = function(){
-	this.innerHTML = clean (this.innerHTML);
-	this.innerHTML = replace (this.innerHTML, '(( ', '((');
-	this.innerHTML = replace (this.innerHTML, ' ))', '))');
+cleanNode = function (node){
+	node.innerHTML = clean (node.innerHTML);
+	node.innerHTML = replace (node.innerHTML, '(( ', '((');
+	node.innerHTML = replace (node.innerHTML, ' ))', '))');
 }
-HTMLElement.prototype.printVar = function (varName, value){
-	var varType = value.constructor.name;
+printVar = function (varName, value, node){
+	var varType = typeof (value);
 	// les variables simple
-	if (varType == 'String' || varType == 'Number'){
-		this.innerHTML = replace (this.innerHTML, '(('+ varName +'))', value);
-		for (var a in this.attributes){
-			if (typeof (this.attributes[a].value) == 'string' && containsText (this.attributes[a].value, '(('+ varName +'))'))
-				this.setAttribute (this.attributes[a].name, replace (this.attributes[a].value, '(('+ varName +'))', value));
+	if (varType == 'string' || varType == 'number'){
+		node.innerHTML = replace (node.innerHTML, '(('+ varName +'))', value);
+		for (var a in node.attributes){
+			if (typeof (node.attributes[a].value) == 'string' && containsText (node.attributes[a].value, '(('+ varName +'))'))
+				node.setAttribute (node.attributes[a].name, replace (node.attributes[a].value, '(('+ varName +'))', value));
 	}}
-	else if (varType == 'Array') this.printList (varName, value);
-	else if (varType == 'Object') for (var v in value) this.printVar (varName +'.'+v, value[v]);
+	// les listes
+	else if (varType == 'object' && value[0]){
+		printList (varName, value, node);
+	}
+	// les dictionnaires
+	else if (varType == 'object'){
+			for (var v in value) printVar (varName +'.'+v, value[v], node);
+	}
 }
 printLink = function(){
 	var linkList = document.getElementsByTagName ('a');
@@ -343,10 +366,10 @@ printLink = function(){
 		link = replace (link, '_', " ");
 		linkList[l].innerHTML = replace (linkList[l].innerHTML, '(())', link);
 }}
-HTMLElement.prototype.useTemplates = function(){
+function useTemplates (node){
 	// utiliser un template html
-	var templateList = this.getElementsByTagName ('template');
-	var insertList = this.getElementsByTagName ('insert');
+	var templateList = node.getElementsByTagName ('template');
+	var insertList = node.getElementsByTagName ('insert');
 	for (var f=0; f< insertList.length; f++){
 		if (containsText (insertList[f].id, '.html')){
 			var xhttp = new XMLHttpRequest();
@@ -356,8 +379,10 @@ HTMLElement.prototype.useTemplates = function(){
 				insertList[f].innerHTML = xhttp.responseText;
 				insertList[f] = insertList[f].children[0];
 		}}
-		else for (var t in templateList) if (templateList[t].id == insertList[f].id) insertList[f].innerHTML = templateList[t].innerHTML;
-}}
+		else{
+			for (var t in templateList){
+				if (templateList[t].id == insertList[f].id) insertList[f].innerHTML = templateList[t].innerHTML;
+}}}}
 useTemplateAssync = function (tagName, id){
 	var tagDst = document.getElementsByTagName (tagName)[0];
 	tagDst.style.display = 'block';
@@ -368,8 +393,8 @@ useTemplateAssync = function (tagName, id){
 			if (this.readyState == 4){
 				tagDst.innerHTML = this.responseText;
 				tagDst = tagDst.children[0];
-				tagDst.init();
-				tagDst.load();
+				init (tagDst);
+				load (tagDst);
 		}};
 		xhttp.open ('GET', id, true);
 		xhttp.send();
@@ -378,94 +403,108 @@ useTemplateAssync = function (tagName, id){
 		templateSrc = document.getElementById (id);
 		tagDst.innerHTML = templateSrc.innerHTML;
 }}
-HTMLElement.prototype.printList = function (varName, value){
+printList = function (varName, value, node){
 	// afficher une liste imbriquée
-	if (value.constructor.name != 'Array' || value.length ==0) return;
-	var nodeList = this.findContainerParenthesis (varName);
+	// récupérer les conteneurs directs
+	if (typeof (value) != 'object' || ! value[0]) return;
+	var nodeList = findContainerParenthesis (varName, node);
 	if (! nodeList) nodeList =[];
-	var nodeListTmp = this.findContainerFor (varName);
-	if (nodeListTmp) for (var c in nodeListTmp) nodeList.push (nodeListTmp[c]);
+	var nodeListTmp = findContainerFor (varName, node);
+	if (nodeListTmp){
+		for (var c in nodeListTmp) nodeList.push (nodeListTmp[c]);
+	}
 	if (! nodeList) return;
 	// récupérer les conteneurs parents, pour les listes imbriquées
-	var container;
-	if (value[0].constructor.name == 'Object') for (var n=0; n< nodeList.length; n++){
-		for (var v=0; v< value.length -1; v++){
-			container = nodeList[n].copy (true);
-			for (var w in value[v]){
-				container.printVar (w, value[v][w]);
-				container.printVar (varName +'.'+w, value[v][w]);
-		}}
-		for (var w in value[v]){
-			nodeList[n].printVar (w, value[v][w]);
-			nodeList[n].printVar (varName +'.'+w, value[v][w]);
-	}}else{
-		if (value[0].constructor.name == 'Array') for (var n=0; n< nodeList.length; n++) nodeList[n] = nodeList[n].findContainerList (value);
-		for (var n=0; n< nodeList.length; n++){
-			for (var v=0; v< value.length -1; v++){
-				container = nodeList[n].copy (true);
-				container.printVar (varName, value[v]);
+	var v=0, container;
+	if (value[0][0]){
+		for (var l in nodeList){
+			nodeList[l] = findContainerList (value, nodeList[l]);
+			for (v=0; v< value.length -1; v++){
+				container = copyNode (nodeList[l]);
+				printVar (varName, value[v], container);
+				printVar ("", value[v], container);
 			}
-			nodeList[n].printVar (varName, value[v]);
-}}}
-HTMLElement.prototype.findContainerFor = function (varName){
+			printVar (varName, value[v], nodeList[l]);
+			printVar ("", value[v], nodeList[l]);
+		}
+	}
+	// liste de dictionnaires
+	else{
+		for (var c in nodeList){
+			v=0;
+			for (v=0; v< value.length -1; v++){
+				containerTmp = copyNode (nodeList[c]);
+				for (var w in value[v]) printVar (w, value[v][w], containerTmp);
+			}
+			for (var w in value[v]) printVar (w, value[v][w], nodeList[c]);
+		}
+	}
+}
+findContainerFor = function (varName, node){
 	// retrouver le noeud contenant une liste d'objet, contenant un attribut for
-//	if (this.tagName == 'selection' || this.tagName == 'carousel') return null;
-	if (this.getAttribute ('for') && this.getAttribute ('for') == varName) return [ this ,];
+//	if (node.tagName == 'selection' || node.tagName == 'carousel') return null;
+	if (node.getAttribute ('for') && node.getAttribute ('for') == varName) return [ node ,];
 	else if (
-		! containsText (this.innerHTML, "for='" + varName +"'") &&
-		! containsText (this.innerHTML, 'for="' + varName +'"')) return null;
+		! containsText (node.innerHTML, "for='" + varName +"'") &&
+		! containsText (node.innerHTML, 'for="' + varName +'"')) return null;
 	var nodeList =[];
 	var nodeListTmp =[];
-	for (var c=0; c< this.children.length; c++){
-		nodeListTmp = this.children[c].findContainerFor (varName);
-		if (nodeListTmp) for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
+	for (var c=0; c< node.children.length; c++){
+		nodeListTmp = findContainerFor (varName, node.children[c]);
+		if (nodeListTmp){
+			for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
+		}
 	}
 	if (nodeList.length ==0) nodeList =null;
 	else if (nodeList[0].tagName == 'SELECTION' || nodeList[0].tagName == 'CAROUSEL') nodeList =null;
 	return nodeList;
 }
-HTMLElement.prototype.findContainerModel = function (varName){
-	var model = this.getAttribute ('model');
+function findContainerModel (varName, node){
+	if (! node) node = document.body;
+	var model = node.getAttribute ('model');
 	if (! model || ! containsText (model, '{{'+ varName +'}}')) return [];
 	var nodeList =[];
 	var nbOcurencies = count (model, '{{'+ varName +'}}');
 	var c=0;
-	while (nbOcurencies >0 && c< this.children.length){
-		if (this.children[c].getAttribute ('model') && containsText (this.children[c].getAttribute ('model'), '{{'+ varName +'}}')){
-			nodeListTmp = findContainerModel (varName, this.children[c]);
+	while (nbOcurencies >0 && c< node.children.length){
+		if (node.children[c].getAttribute ('model') && containsText (node.children[c].getAttribute ('model'), '{{'+ varName +'}}')){
+			nodeListTmp = findContainerModel (varName, node.children[c]);
 			if (nodeListTmp && nodeListTmp.length >0){
 				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
-				nbOcurencies -= count (this.children[c].getAttribute ('model'), '{{'+ varName +'}}');
-	}} c++; }
-	if (nbOcurencies) nodeList.push (this);
+				nbOcurencies -= count (node.children[c].getAttribute ('model'), '{{'+ varName +'}}');
+		}}
+		c++;
+	}
+	if (nbOcurencies) nodeList.push (node);
 	return nodeList;
 }
-HTMLElement.prototype.findContainerParenthesis = function (varName){
+findContainerParenthesis = function (varName, node){
 	// retrouver le noeud contenant directement la variable, avec les parenthèses
-	if (! containsText (this.outerHTML, '(('+ varName +'))') &&! containsText (this.outerHTML, '(('+ varName +'.')) return null;
-	var nbOcurencies = count (this.outerHTML, '(('+ varName +'))');
-	nbOcurencies += count (this.outerHTML, '(('+ varName +'.');
+	if (! containsText (node.outerHTML, '(('+ varName +'))')) return null;
+	var nbOcurencies = count (node.outerHTML, '(('+ varName +'))');
 	var nodeList =[];
 	var nodeListTmp =[];
 	var c=0;
-	while (nbOcurencies >0 && c< this.children.length){
-		if (containsText (this.children[c].outerHTML, '(('+ varName +'))') || containsText (this.children[c].outerHTML, '(('+ varName +'.')){
-			nodeListTmp = this.children[c].findContainerParenthesis (varName);
+	while (nbOcurencies >0 && c< node.children.length){
+		if (containsText (node.children[c].outerHTML, '(('+ varName +'))')){
+			nodeListTmp = findContainerParenthesis (varName, node.children[c]);
 			if (nodeListTmp && nodeListTmp.length >0){
 				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
-				nbOcurencies -= count (this.children[c].outerHTML, '(('+ varName +'))');
-				nbOcurencies -= count (this.children[c].outerHTML, '(('+ varName +'.');
-	}} c++; }
-	if (nbOcurencies) nodeList.push (this);
+				nbOcurencies -= count (node.children[c].outerHTML, '(('+ varName +'))');
+			}
+		}
+		c++;
+	}
+	if (nbOcurencies) nodeList.push (node);
 	return nodeList;
 }
-HTMLElement.prototype.findContainerList = function (value){
+findContainerList = function (value, node){
 	/* vérifier si une liste est imbriquée
 	node est le conteneur trouvé avec findContainerParenthesis
 	*/
-	if (value.constructor.name == 'Array' && value[0].constructor.name == 'Array'){
-		node = this.parentElement;
-		node = node.findContainerList (value[0]);
+	if (typeof (value) == 'object' && value[0] && typeof (value[0]) == 'object' && value[0][0]){
+		node = node.parentElement;
+		node = findContainerList (value[0], node);
 	}
 	return node;
 }
@@ -489,13 +528,18 @@ function createInput (type, value, parent, id, clazz, placeholder){
 	if (placeholder) newElement.placeholder = placeholder;
 	return parent.children [parent.children.length -1];
 }
-HTMLElement.prototype.copy = function (bind){
-	var newNode = this.cloneNode();
-	if (this.innerHTML) newNode.innerHTML = this.innerHTML;
-	if (this.value) newNode.value = this.value;
-	if (this.placeholder) newNode.placeholder = this.placeholder;
-	if (this.type) newNode.type = this.type;
-	if (this.parentNode && bind) this.parentNode.insertBefore (newNode, this);
+function copyNode (node, bind=true){
+	if (! node){
+		var src = getStack()[1];
+		console.log ('copie impossible, pas de noeud modèle\nfonction:\t' + src.func + '\nfichier:\t' + src.file + '\nligne:\t\t' + src.line);
+		return null;
+	}
+	var newNode = node.cloneNode();
+	if (node.innerHTML) newNode.innerHTML = node.innerHTML;
+	if (node.value) newNode.value = node.value;
+	if (node.placeholder) newNode.placeholder = node.placeholder;
+	if (node.type) newNode.type = node.type;
+	if (node.parentNode && bind) node.parentNode.insertBefore (newNode, node);
 	return newNode;
 }
 // fonctions modifiant un texte
@@ -539,8 +583,12 @@ slice = function (text, d,f){
 strip = function (text){
 	var toStrip = '\n \t/';
 	var i=0, j=1;
-	for (; i< text.length; i++) if (! containsText (toStrip, text[i])) break;
-	for (; j<= text.length; j++) if (! containsText (toStrip, text [text.length -j])) break;
+	for (; i< text.length; i++){
+		if (! containsText (toStrip, text[i])) break;
+	}
+	for (; j<= text.length; j++){
+		if (! containsText (toStrip, text [text.length -j])) break;
+	}
 	j= text.length +1-j;
 	return text.substring (i,j);
 }

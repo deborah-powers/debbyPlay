@@ -232,7 +232,7 @@ HTMLElement.prototype.getModel = function(){
 			this.innerHTML = modelTmp;
 			trash = attributeList.shift();
 		}
-		for (var a=0; a< attributeList.length; a++){
+		for (var a in attributeList){
 			d= index (attributeList[a], ':');
 			modelTmp = slice (attributeList[a], d+1);
 			modelTmp = replace (modelTmp, '{{', '((');
@@ -311,7 +311,8 @@ HTMLElement.prototype.printVar = function (varName, value){
 			if (typeof (this.attributes[a].value) == 'string' && containsText (this.attributes[a].value, '(('+ varName +'))'))
 				this.setAttribute (this.attributes[a].name, replace (this.attributes[a].value, '(('+ varName +'))', value));
 	}}
-	else if (varType == 'Array') this.printList (varName, value);
+//	else if (varType == 'Array') this.printList (varName, value);
+	else if (varType == 'Array') printList (varName, value, this);
 	else if (varType == 'Object') for (var v in value) this.printVar (varName +'.'+v, value[v]);
 }
 printLink = function(){
@@ -378,12 +379,13 @@ useTemplateAssync = function (tagName, id){
 		templateSrc = document.getElementById (id);
 		tagDst.innerHTML = templateSrc.innerHTML;
 }}
-HTMLElement.prototype.printList = function (varName, value){
+printList = function (varName, value, node){
 	// afficher une liste imbriquée
+	// récupérer les conteneurs directs
 	if (value.constructor.name != 'Array' || value.length ==0) return;
-	var nodeList = this.findContainerParenthesis (varName);
+	var nodeList = node.findContainerParenthesis (varName);
 	if (! nodeList) nodeList =[];
-	var nodeListTmp = this.findContainerFor (varName);
+	var nodeListTmp = node.findContainerFor (varName);
 	if (nodeListTmp) for (var c in nodeListTmp) nodeList.push (nodeListTmp[c]);
 	if (! nodeList) return;
 	// récupérer les conteneurs parents, pour les listes imbriquées
@@ -391,14 +393,13 @@ HTMLElement.prototype.printList = function (varName, value){
 	if (value[0].constructor.name == 'Object') for (var n=0; n< nodeList.length; n++){
 		for (var v=0; v< value.length -1; v++){
 			container = nodeList[n].copy (true);
-			for (var w in value[v]){
-				container.printVar (w, value[v][w]);
-				container.printVar (varName +'.'+w, value[v][w]);
-		}}
+			for (var w in value[v]) container.printVar (w, value[v][w]);
+		}
 		for (var w in value[v]){
 			nodeList[n].printVar (w, value[v][w]);
 			nodeList[n].printVar (varName +'.'+w, value[v][w]);
-	}}else{
+		}
+	}else{
 		if (value[0].constructor.name == 'Array') for (var n=0; n< nodeList.length; n++) nodeList[n] = nodeList[n].findContainerList (value);
 		for (var n=0; n< nodeList.length; n++){
 			for (var v=0; v< value.length -1; v++){
@@ -407,6 +408,29 @@ HTMLElement.prototype.printList = function (varName, value){
 			}
 			nodeList[n].printVar (varName, value[v]);
 }}}
+HTMLElement.prototype.printList_vb = function (varName, value){
+	// afficher une liste imbriquée
+	// récupérer les conteneurs directs
+	if (value.constructor.name != 'Array') return;
+	var nodeList = this.findContainerParenthesis (varName);
+	if (! nodeList) nodeList =[];
+	var nodeListTmp = this.findContainerFor (varName);
+	if (nodeListTmp) for (var c in nodeListTmp) nodeList.push (nodeListTmp[c]);
+	if (! nodeList) return;
+	// récupérer les conteneurs parents, pour les listes imbriquées
+	if (value[0].constructor.name == 'Array') for (var l in nodeList) nodeList[l] = nodeList[l].findContainerList (value);
+	var container;
+	debug (varName, nodeList.length, value.length);
+	console.log (nodeList, value);
+	for (var l in nodeList){
+	//	if (varName == 'listeSimple') debug (l, nodeList[l].tagName);
+		for (v=0; v< value.length -1; v++){
+			container = nodeList[l].copy (true);
+		//	debugCondition (varName == 'listeSimple', container.tagName, container.innerText);
+			container.printVar (varName, value[v]);
+		}
+		nodeList[l].printVar (varName, value[value.length -1]);
+}}
 HTMLElement.prototype.findContainerFor = function (varName){
 	// retrouver le noeud contenant une liste d'objet, contenant un attribut for
 //	if (this.tagName == 'selection' || this.tagName == 'carousel') return null;
@@ -442,19 +466,17 @@ HTMLElement.prototype.findContainerModel = function (varName){
 }
 HTMLElement.prototype.findContainerParenthesis = function (varName){
 	// retrouver le noeud contenant directement la variable, avec les parenthèses
-	if (! containsText (this.outerHTML, '(('+ varName +'))') &&! containsText (this.outerHTML, '(('+ varName +'.')) return null;
+	if (! containsText (this.outerHTML, '(('+ varName +'))')) return null;
 	var nbOcurencies = count (this.outerHTML, '(('+ varName +'))');
-	nbOcurencies += count (this.outerHTML, '(('+ varName +'.');
 	var nodeList =[];
 	var nodeListTmp =[];
 	var c=0;
 	while (nbOcurencies >0 && c< this.children.length){
-		if (containsText (this.children[c].outerHTML, '(('+ varName +'))') || containsText (this.children[c].outerHTML, '(('+ varName +'.')){
+		if (containsText (this.children[c].outerHTML, '(('+ varName +'))')){
 			nodeListTmp = this.children[c].findContainerParenthesis (varName);
 			if (nodeListTmp && nodeListTmp.length >0){
 				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
 				nbOcurencies -= count (this.children[c].outerHTML, '(('+ varName +'))');
-				nbOcurencies -= count (this.children[c].outerHTML, '(('+ varName +'.');
 	}} c++; }
 	if (nbOcurencies) nodeList.push (this);
 	return nodeList;

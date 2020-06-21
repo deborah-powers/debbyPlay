@@ -1,10 +1,10 @@
-<!doctype html><html><head>
-<title>démo de debby play</title>
-<meta name='viewport' content='width=device-width,initial-scale=1'/>
-<meta charset='utf-8'/>
-<script type='text/javascript' src='debbyPlay.js'></script>
-<link rel='stylesheet' type='text/css' href='debbyPlay.css'/>
-<link rel='stylesheet' type='text/css' href='colors.css' media='screen'/>
+<!doctype html><html><head><title>démo de debby play</title>
+	<meta name='viewport' content='width=device-width,initial-scale=1'/>
+	<meta charset='utf-8'/>
+	<script type='text/javascript' src='/home/lenovo/Bureau/site-dp/library-js/debug.js'></script>
+	<script type='text/javascript' src='debbyPlay.js'></script>
+	<link rel='stylesheet' type='text/css' href='debbyPlay.css'/>
+	<link rel='stylesheet' type='text/css' href='colors.css' media='screen'/>
 <style type='text/css'>
 	.list, .list * {
 		display: flex;
@@ -27,19 +27,12 @@
 <p>une liste:</p><div class='list'><p><span><em>(( listeSimple )),</em>;</span>.</p></div>
 <p>un objet:</p>
 <div><p class='list'><span>(( objet.prenom ))</span><span>(( objet.nom ))</span> a comme pouvoir <span>(( objet.infos.pouvoir ))</span>,</p></div>
-<p>une liste d'objets:</p><div class='list'><p for='listeObjet'>(( prenom )) (( nom )),</p></div>
-<p>et</p>
-<div class='list'>
-	<span for='listeObjet' id='imbrique'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span>
-</div>
-<p>liste imbriquée d'objets:</p>
-<div class='list'><p>
-	<span for='listeObjetDb'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span>
-</p></div>
-<p>et</p>
-<div class='list'><p>
-	<span for='listeObjetTp'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span>
-</p></div>
+<p>une liste d'objets: a)</p><div class='list'><p>(( listeObjet.prenom )) (( listeObjet.nom )),</p></div>
+<p>et b)</p><div class='list'><p for='listeObjet'>(( prenom )) (( nom )),</p></div>
+<p>et c)</p><div class='list'><span for='listeObjet' id='imbrique'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span></div>
+<p>liste imbriquée d'objets: d)</p>
+<div class='list'><p><span for='listeObjetDb'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span></p></div>
+<p>et e)</p><div class='list'><p><span for='listeObjetTp'><em>(( prenom ))</em><em class='colored'> (( nom )),</em>;</span></p></div>
 
 	<h2>l'interractivité</h2>
 <input type='text' value='(( testEchange ))'>
@@ -60,7 +53,7 @@
 <p>json: (( json.prenom )) (( json.nom ))</p>
 <div id='test-load-file'></div>
 <insert id='tplt-local'>template locale</insert>
-<insert id='/home/lenovo/Bureau/site-dp/library-js/debbyPlay/debbyPlay-template.html'>template externe</insert>
+<insert id='debbyPlay-template.html'>template externe</insert>
 <template id='tplt-local'><p>je suis le template interne</p><p>hello (( objet.prenom )) (( objet.nom ))</p></template>
 <template id='tplt-local-bis'>
 	<p>je suis le template interne, deuxième version</p><p>bojour (( objet.prenom )) (( objet.nom ))</p>
@@ -69,7 +62,8 @@
 <button onclick='chooseTag("tplt-local-bis")'>template n°2</button>
 </body><script type='text/javascript'>
 // afficher des variables
-init (document.body);
+document.body.init();
+
 debbyPlay.testEchange = 'coucou';
 debbyPlay.link = 'http://deborah-powers.fr/';
 debbyPlay.texte = 'bonjour';
@@ -79,7 +73,10 @@ debbyPlay.objet ={
 	'prenom': 'jean', 'nom': 'grey',
 	'infos': { 'alias': 'phénix', 'pouvoir': 'télépathie' }
 };
-debbyPlay.listeSimple =[[['aaa','aab'],['aba','abb']],[['baa','bab'],['bba','bbb']]];
+debbyPlay.listeSimple =[
+	[['aaa','aab','aac'],['aba','abb','abc']],
+	[['baa','bab'],['bba','bbb'],['bca','bcb']]
+];
 debbyPlay.listeObjet =[{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }];
 debbyPlay.listeObjetDb =[
 [{ 'prenom': 'ororo', 'nom': 'munroe' }, { 'prenom': 'hank', 'nom': 'mc coy' }],
@@ -97,13 +94,13 @@ debbyPlay.color = '#903';
 function changeColor(){
 	if (debbyPlay.color === '#903') debbyPlay.color = '#033';
 	else debbyPlay.color = '#903';
-	load (document.getElementsByTagName ('button')[0]);
+	document.getElementsByTagName ('button')[0].load();
 }
 // récupérer le dossier contennant mes fichiers de test
 var path = slice (document.URL, 7,-9);
 // utiliser des templates et des json
-useJson (path + 'test.json', 'json', document.body);
-function chooseTag (tagid){ useTemplate ('tplt-local', tagid, document.body); }
+useJson (path + 'test.json', 'json');
+function chooseTag (tagid){ document.body.useTemplate ('tplt-local', tagid); }
 // afficher des sélecteurs
 debbyPlay.choix = 'poire';
 debbyPlay.optionList =[ 'pêche', 'pomme', 'poire', 'abricot' ];
@@ -112,17 +109,17 @@ debbyPlay.optionListBis =[ 'choux', 'carotte', 'navet', 'oignon' ];
 function chooseOption (option){
 	console.log ('uno', option);
 	debbyPlay.choix = option;
-	load (document.getElementById ('choix'));
+	document.getElementById ('choix').load();
 }
 function chooseOptionBis (option){
 	console.log ('bis', option);
 	debbyPlay.choix = option;
-	load (document.getElementById ('choix'));
+	document.getElementById ('choix').load();
 }
 debbyPlay.date = 'coucou';
 function chooseDate (year, month, monthNb, day){
 	debbyPlay.date = year +'/'+ month +'/'+ monthNb +'/'+ day;
-	load (document.getElementById ('date'));
+	document.getElementById ('date').load();
 }
-load();
+document.body.load();
 </script></html>

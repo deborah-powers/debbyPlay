@@ -1,4 +1,5 @@
 /* mettre en forme certains éléments de mon cadriciel display. */
+body { border-color: red; }
 template	{	display: none;	}
 insert		{	display: block;	}
 selection	{
