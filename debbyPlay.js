@@ -2,7 +2,9 @@
 je me suis inspirée de la foncionnalité de base d'angularjs.
 display-test démontre son utilisation.
 
-dépendence: display.css
+dépendence:
+	display.css
+	text.js
 
 ________________________ fonctions utilisable par vous ________________________ */
 
@@ -26,6 +28,23 @@ HTMLElement.prototype.load = function(){
 	this.createCalendar();
 	this.createSelection();
 	this.createCarousel();
+	conditionnal();
+}
+HTMLElement.prototype.finish = function (fieldList){
+	// fieldList =[ '((a))', '((b))' ]
+	if (this.tagName == 'SCRIPT') return;
+	if (fieldList && this.innerHTML.contain ('((')) for (var f=0; f< fieldList.length; f++)
+		this.innerHTML = this.innerHTML.replace (fieldList[f]);
+	else if (this.outerHTML.contain ('((')){
+		for (var c=0; c< this.children.length; c++) this.children[c].finish();
+		if (this.innerHTML.contain ('((')) this.innerHTML ="";
+	}
+}
+// affichage conditionnel de certaines balises
+function conditionnal(){
+	var tagList = document.getElementsByTagName ('*');
+	for (var t=0; t< tagList.length; t++) if (tagList[t].getAttribute ('if') &&! eval (tagList[t].getAttribute ('if')))
+		tagList[t].className = 'hidden';
 }
 // afficher des sélecteurs. la target de funcRes est une string
 HTMLElement.prototype.createSelection = function(){
@@ -129,7 +148,7 @@ HTMLElement.prototype.useTemplate = function (idInsert, idTemplate){
 	var insertList = this.getElementsByTagName ('insert');
 	var insert;
 	for (i in insertList) if (insertList[i].id == idInsert) insert = insertList[i];
-	if (containsText (idTemplate, '.html')){
+	if (idTemplate.contain ('.html')){
 		var xhttp = new XMLHttpRequest();
 		xhttp.open ('GET', idTemplate, false);
 		xhttp.send();
@@ -142,16 +161,21 @@ HTMLElement.prototype.useTemplate = function (idInsert, idTemplate){
 		var template;
 		for (var t in templateList) if (templateList[t].id == idTemplate) template = templateList[t];
 		insert.innerHTML = template.innerHTML;
-}}
+	}
+	insert.load();
+}
 // utiliser un fichier json
-useJson = function (jsonFile, varName){
+useJson = function (jsonFile){
 	var xhttp = new XMLHttpRequest();
 	xhttp.open ('GET', jsonFile, false);
 	xhttp.send();
+	var res = null;
 	if (xhttp.status ==200){
-		var res = JSON.parse (xhttp.responseText);
-		debbyPlay[varName] = res;
-}}
+		var resTmp = JSON.parse (xhttp.responseText);
+		res = resTmp;
+	}
+	return res;
+}
 useJsonAssync = function (jsonFile, varName, callback){
 	var xhttp = new XMLHttpRequest();
 	xhttp.responseType = 'text/json';
@@ -165,10 +189,14 @@ useJsonAssync = function (jsonFile, varName, callback){
 	xhttp.open ('GET', jsonFile, true);
 	xhttp.send();
 }
+charToEncode =[ ['=', 'xxx'], ['?', 'qqq'], ['&', 'ddd'] ];
 paramToUrl = function (url, params){
 	if (params){
 		url = url +'?';
-		for (p in params) url = url +p+'='+ params[p] +'&';
+		for (p in params){
+			for (var c=0; c< charToEncode.length; c++) params[p] = params[p].replace (charToEncode[c][0], charToEncode[c][1]);
+			url = url +p+'='+ params[p] +'&';
+		}
 		url = url.slice (0,-1);
 	}
 	url = encodeURI (url);
@@ -177,17 +205,19 @@ paramToUrl = function (url, params){
 paramFromUrl = function (url){
 	url = decodeURI (url);
 	var d= url.indexOf ('?') +1;
+	if (d==0) return {};
 	var paramText = url.slice (d);
 	var paramList = paramText.split ('&');
 	var params ={};
 	for (var p=0; p< paramList.length; p++){
 		paramList[p] = paramList[p].split ('=');
+		for (var c=0; c< charToEncode.length; c++) paramList[p][1] = paramList[p][1].replace (charToEncode[c][1], charToEncode[c][0]);
 		params [paramList[p][0]] = paramList[p][1];
 	}
 	return params;
 }
 useBackend = function (url, varName, params){
-	url = paramToUrl (url, params);
+	var url = paramToUrl (url, params);
 	var xhttp = new XMLHttpRequest();
 	xhttp.open ('GET', url, false);
 	xhttp.send();
@@ -200,20 +230,20 @@ useBackend = function (url, varName, params){
 // conserver le template de la page afin de la recharger
 HTMLElement.prototype.setModel = function(){
 	if (this.tagName == 'SCRIPT') return;
-	else if (containsText (this.outerHTML, '))')){
+	else if (this.outerHTML.contain ('))')){
 		var attributeList ="";
 		var modelTmp;
-		if (containsText (this.innerHTML, '))')){
-			modelTmp = copyText (this.innerHTML);
-			modelTmp = replace (modelTmp, '((', '{{');
-			modelTmp = replace (modelTmp, '))', '}}');
+		if (this.innerHTML.contain ('))')){
+			modelTmp = this.innerHTML.copy();
+			modelTmp = modelTmp.replace ('((', '{{');
+			modelTmp = modelTmp.replace ('))', '}}');
 			attributeList = attributeList +'$body:'+ modelTmp;
 		}
 		for (var a in this.attributes) if (typeof (this.attributes[a].value) == 'string' && this.attributes[a].name != 'model'
-				&& containsText (this.attributes[a].value, '))')){
-			modelTmp = copyText (this.attributes[a].value);
-			modelTmp = replace (modelTmp, '((', '{{');
-			modelTmp = replace (modelTmp, '))', '}}');
+				&& this.attributes[a].value.contain ('))')){
+			modelTmp = this.attributes[a].value.copy();
+			modelTmp = modelTmp.replace ('((', '{{');
+			modelTmp = modelTmp.replace ('))', '}}');
 			attributeList = attributeList +'$'+ this.attributes[a].name +':'+ modelTmp;
 		}
 		this.setAttribute ('model', attributeList);
@@ -223,21 +253,21 @@ HTMLElement.prototype.getModel = function(){
 	if (this.getAttribute ('model')){
 		var modelTmp ="";
 		var d=0;
-		var attributeList = split (this.getAttribute ('model'), '$');
+		var attributeList = this.getAttribute ('model').split ('$');
 		var trash = attributeList.shift();
-		if (slice (attributeList[0], 0,5) == 'body:'){
-			modelTmp = slice (attributeList[0], 5);
-			modelTmp = replace (modelTmp, '{{', '((');
-			modelTmp = replace (modelTmp, '}}', '))');
+		if (attributeList[0].slice (0,5) == 'body:'){
+			modelTmp = attributeList[0].slice (5);
+			modelTmp = modelTmp.replace ('{{', '((');
+			modelTmp = modelTmp.replace ('}}', '))');
 			this.innerHTML = modelTmp;
 			trash = attributeList.shift();
 		}
 		for (var a=0; a< attributeList.length; a++){
-			d= index (attributeList[a], ':');
-			modelTmp = slice (attributeList[a], d+1);
-			modelTmp = replace (modelTmp, '{{', '((');
-			modelTmp = replace (modelTmp, '}}', '))');
-			this.setAttribute (slice (attributeList[a], 0,d), modelTmp);
+			d= attributeList[a].index (':');
+			modelTmp = attributeList[a].slice (d+1);
+			modelTmp = modelTmp.replace ('{{', '((');
+			modelTmp = modelTmp.replace ('}}', '))');
+			this.setAttribute (attributeList[a].slice (0,d), modelTmp);
 		}
 		this.setModel();
 }}
@@ -281,35 +311,35 @@ setAfter = function (event, funcRes){
 HTMLElement.prototype.setInput = function(){
 	var inputList = this.getElementsByTagName ('input');
 	for (var i=0; i< inputList.length; i++){
-		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
+		if (inputList[i].getAttribute ('model') && inputList[i].getAttribute ('model').contain ('$value:'))
 			inputList[i].addEventListener ('mouseleave', loadInput);
 	}
 	inputList = this.getElementsByTagName ('textarea');
 	for (var i=0; i< inputList.length; i++){
-		if (inputList[i].getAttribute ('model') && containsText (inputList[i].getAttribute ('model'), '$value:'))
+		if (inputList[i].getAttribute ('model') && inputList[i].getAttribute ('model').contain ('$value:'))
 			inputList[i].addEventListener ('mouseleave', loadInput);
 }}
 function loadInput (event){
-	var varName = slice (event.target.getAttribute ('model'), 9,-2);
+	var varName = event.target.getAttribute ('model').slice (9,-2);
 	debbyPlay [varName] = event.target.value;
-	var nodeList = findContainerModel (varName, document.body);
+	var nodeList = document.body.findContainerModel (varName);
 	for (var n=0; n< nodeList.length; n++) nodeList[n].load();
 	event.target.addEventListener ('mouseleave', loadInput);
 }
 // affichage de base
 HTMLElement.prototype.clean = function(){
-	this.innerHTML = clean (this.innerHTML);
-	this.innerHTML = replace (this.innerHTML, '(( ', '((');
-	this.innerHTML = replace (this.innerHTML, ' ))', '))');
+	this.innerHTML = this.innerHTML.clean();
+	this.innerHTML = this.innerHTML.replace ('(( ', '((');
+	this.innerHTML = this.innerHTML.replace (' ))', '))');
 }
 HTMLElement.prototype.printVar = function (varName, value){
 	var varType = value.constructor.name;
 	// les variables simple
 	if (varType == 'String' || varType == 'Number'){
-		this.innerHTML = replace (this.innerHTML, '(('+ varName +'))', value);
+		this.innerHTML = this.innerHTML.replace ('(('+ varName +'))', value);
 		for (var a in this.attributes){
-			if (typeof (this.attributes[a].value) == 'string' && containsText (this.attributes[a].value, '(('+ varName +'))'))
-				this.setAttribute (this.attributes[a].name, replace (this.attributes[a].value, '(('+ varName +'))', value));
+			if (typeof (this.attributes[a].value) == 'string' && this.attributes[a].value.contain ('(('+ varName +'))'))
+				this.setAttribute (this.attributes[a].name, this.attributes[a].value.replace ('(('+ varName +'))', value));
 	}}
 	else if (varType == 'Array') this.printList (varName, value);
 	else if (varType == 'Object') for (var v in value) this.printVar (varName +'.'+v, value[v]);
@@ -319,36 +349,36 @@ printLink = function(){
 	var link = null, d;
 	for (var l=0; l< linkList.length; l++){
 		link = linkList[l].getAttribute ('href');
-		d= rindex (link, '/');
+		d= link.rindex ('/');
 		if (d == link.length -1){
-			link = slice (link, 0,d);
-			d= rindex (link, '/');
+			link = link.slice (0,d);
+			d= link.rindex ('/');
 		}
-		link = slice (link, d+1);
-		if (containsText (link, '.')){
-			d= rindex (link, '.');
-			link = slice (link, 0,d);
+		link = link.slice (d+1);
+		if (link.contain ('.')){
+			d= link.rindex ('.');
+			link = link.slice (0,d);
 		}
-		if (containsText (link, '.')){
-			d= rindex (link, '.');
+		if (link.contain ('.')){
+			d= link.rindex ('.');
 			if (d == link.length -1){
-				link = slice (link, 0,d);
-				d= rindex (link, '.');
+				link = link.slice (0,d);
+				d= link.rindex ('.');
 			}
 			d=d+1;
-			link = slice (link, d);
+			link = link.slice (d);
 		}
-		if (link[0] =='#') link = slice (link, 1);
-		link = replace (link, '-', " ");
-		link = replace (link, '_', " ");
-		linkList[l].innerHTML = replace (linkList[l].innerHTML, '(())', link);
+		if (link[0] =='#') link = link.slice (1);
+		link = link.replace ('-', " ");
+		link = link.replace ('_', " ");
+		linkList[l].innerHTML = linkList[l].innerHTML.replace ('(())', link);
 }}
 HTMLElement.prototype.useTemplates = function(){
 	// utiliser un template html
 	var templateList = this.getElementsByTagName ('template');
 	var insertList = this.getElementsByTagName ('insert');
 	for (var f=0; f< insertList.length; f++){
-		if (containsText (insertList[f].id, '.html')){
+		if (insertList[f].id.contain ('.html')){
 			var xhttp = new XMLHttpRequest();
 			xhttp.open ('GET', insertList[f].id, false);
 			xhttp.send();
@@ -412,8 +442,8 @@ HTMLElement.prototype.findContainerFor = function (varName){
 //	if (this.tagName == 'selection' || this.tagName == 'carousel') return null;
 	if (this.getAttribute ('for') && this.getAttribute ('for') == varName) return [ this ,];
 	else if (
-		! containsText (this.innerHTML, "for='" + varName +"'") &&
-		! containsText (this.innerHTML, 'for="' + varName +'"')) return null;
+		! this.innerHTML.contain ("for='" + varName +"'") &&
+		! this.innerHTML.contain ('for="' + varName +'"')) return null;
 	var nodeList =[];
 	var nodeListTmp =[];
 	for (var c=0; c< this.children.length; c++){
@@ -426,35 +456,35 @@ HTMLElement.prototype.findContainerFor = function (varName){
 }
 HTMLElement.prototype.findContainerModel = function (varName){
 	var model = this.getAttribute ('model');
-	if (! model || ! containsText (model, '{{'+ varName +'}}')) return [];
+	if (! model || ! model.contain ('{{'+ varName +'}}')) return [];
 	var nodeList =[];
-	var nbOcurencies = count (model, '{{'+ varName +'}}');
+	var nbOcurencies = model.count ('{{'+ varName +'}}');
 	var c=0;
 	while (nbOcurencies >0 && c< this.children.length){
-		if (this.children[c].getAttribute ('model') && containsText (this.children[c].getAttribute ('model'), '{{'+ varName +'}}')){
-			nodeListTmp = findContainerModel (varName, this.children[c]);
+		if (this.children[c].getAttribute ('model') && this.children[c].getAttribute ('model').contain ('{{'+ varName +'}}')){
+			nodeListTmp = this.children[c].findContainerModel (varName);
 			if (nodeListTmp && nodeListTmp.length >0){
 				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
-				nbOcurencies -= count (this.children[c].getAttribute ('model'), '{{'+ varName +'}}');
+				nbOcurencies -= this.children[c].getAttribute ('model').count ('{{'+ varName +'}}');
 	}} c++; }
 	if (nbOcurencies) nodeList.push (this);
 	return nodeList;
 }
 HTMLElement.prototype.findContainerParenthesis = function (varName){
 	// retrouver le noeud contenant directement la variable, avec les parenthèses
-	if (! containsText (this.outerHTML, '(('+ varName +'))') &&! containsText (this.outerHTML, '(('+ varName +'.')) return null;
-	var nbOcurencies = count (this.outerHTML, '(('+ varName +'))');
-	nbOcurencies += count (this.outerHTML, '(('+ varName +'.');
+	if (! this.outerHTML.contain ('(('+ varName +'))') &&! this.outerHTML.contain ('(('+ varName +'.')) return null;
+	var nbOcurencies = this.outerHTML.count ('(('+ varName +'))');
+	nbOcurencies += this.outerHTML.count ('(('+ varName +'.');
 	var nodeList =[];
 	var nodeListTmp =[];
 	var c=0;
 	while (nbOcurencies >0 && c< this.children.length){
-		if (containsText (this.children[c].outerHTML, '(('+ varName +'))') || containsText (this.children[c].outerHTML, '(('+ varName +'.')){
+		if (this.children[c].outerHTML.contain ('(('+ varName +'))') || this.children[c].outerHTML.contain ('(('+ varName +'.')){
 			nodeListTmp = this.children[c].findContainerParenthesis (varName);
 			if (nodeListTmp && nodeListTmp.length >0){
 				for (var l in nodeListTmp) nodeList.push (nodeListTmp[l]);
-				nbOcurencies -= count (this.children[c].outerHTML, '(('+ varName +'))');
-				nbOcurencies -= count (this.children[c].outerHTML, '(('+ varName +'.');
+				nbOcurencies -= this.children[c].outerHTML.count ('(('+ varName +'))');
+				nbOcurencies -= this.children[c].outerHTML.count ('(('+ varName +'.');
 	}} c++; }
 	if (nbOcurencies) nodeList.push (this);
 	return nodeList;
@@ -497,62 +527,4 @@ HTMLElement.prototype.copy = function (bind){
 	if (this.type) newNode.type = this.type;
 	if (this.parentNode && bind) this.parentNode.insertBefore (newNode, this);
 	return newNode;
-}
-// fonctions modifiant un texte
-copyText = function (text){
-	var newText ="";
-	for (var l in text) newText = newText + text[l];
-	return newText;
-}
-index = function (text, word, pos){
-	if (! pos) pos =0;
-	return text.indexOf (word, pos);
-}
-rindex = function (text, word){
-	return text.lastIndexOf (word);
-}
-containsText = function (text, word){
-	if (index (text, word) >=0) return true;
-	else return false;
-}
-count = function (text, word) {
-	if (! containsText (text, word)) return 0;
-	var pos =0, nb=0;
-	while (pos >=0){
-		pos = index (text, word, pos);
-		if (pos <0) break;
-		pos +=1; nb +=1;
-	}
-	return nb;
-}
-split = function (text, word){ return text.split (word); }
-replace = function (text, strOld, strNew){
-	if (! strNew) strNew ="";
-	var tabText = split (text, strOld);
-	return tabText.join (strNew);
-}
-slice = function (text, d,f){
-	if (!f) f= text.length;
-	else if (f<0) f= text.length +f;
-	return text.slice (d,f);
-}
-strip = function (text){
-	var toStrip = '\n \t/';
-	var i=0, j=1;
-	for (; i< text.length; i++) if (! containsText (toStrip, text[i])) break;
-	for (; j<= text.length; j++) if (! containsText (toStrip, text [text.length -j])) break;
-	j= text.length +1-j;
-	return text.substring (i,j);
-}
-clean = function (text){
-	text = replace (text, '\r');
-	text = strip (text);
-	while (containsText (text, '  ')) text = replace (text, '  ', ' ');
-	text = replace (text, '\n ', '\n');
-	text = replace (text, ' \n', '\n');
-	text = replace (text, '\t\n', '\n');
-	while (containsText (text, '\n\n')) text = replace (text, '\n\n', '\n');
-	while (containsText (text, '_______')) text = replace (text, '_______', '______');
-	while (containsText (text, '-------')) text = replace (text, '-------', '------');
-	return text;
 }

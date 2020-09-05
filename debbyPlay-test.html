@@ -1,6 +1,7 @@
 <!doctype html><html><head><title>démo de debby play</title>
 	<meta name='viewport' content='width=device-width,initial-scale=1'/>
 	<meta charset='utf-8'/>
+	<script type='text/javascript' src='/home/lenovo/Bureau/site-dp/library-js/text.js'></script>
 	<script type='text/javascript' src='/home/lenovo/Bureau/site-dp/library-js/debug.js'></script>
 	<script type='text/javascript' src='debbyPlay.js'></script>
 	<link rel='stylesheet' type='text/css' href='debbyPlay.css'/>
@@ -16,6 +17,10 @@
 </style></head><body>
 <h1>démo du framework debby play</h1>
 <p>je veux pouvoir afficher les objets simples, les liste, les dictionnaires, ainsi que les sous-listes et sous-dictionnaires dans un template.</p>
+
+	<h2>affichage conditionnel</h2>
+	<p if='"(( condition ))"=="dodo"'>je suis la première condition</p>
+	<p if='"(( condition ))"=="coco"'>je suis la deuxième condition</p>
 
 	<h2>les variables</h2>
 <p class='list'>
@@ -89,6 +94,8 @@ debbyPlay.listeObjetTp =[[
 [{ 'prenom': 'ororo', 'nom': 'munroe' }, { 'prenom': 'hank', 'nom': 'mc coy' }],
 [{ 'prenom': 'jean', 'nom': 'grey' }, { 'prenom': 'scott', 'nom': 'summers' }]
 ]];
+// affichage conditionnel
+debbyPlay.condition = 'dodo';
 // modifier la couleur du bouton
 debbyPlay.color = '#903';
 function changeColor(){
@@ -97,9 +104,9 @@ function changeColor(){
 	document.getElementsByTagName ('button')[0].load();
 }
 // récupérer le dossier contennant mes fichiers de test
-var path = slice (document.URL, 7,-9);
+var path = document.URL.slice (7,-9);
 // utiliser des templates et des json
-useJson (path + 'test.json', 'json');
+debbyPlay.json = useJson ('debbyPlay-test.json');
 function chooseTag (tagid){ document.body.useTemplate ('tplt-local', tagid); }
 // afficher des sélecteurs
 debbyPlay.choix = 'poire';

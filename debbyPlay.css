@@ -1,5 +1,6 @@
 /* mettre en forme certains éléments de mon cadriciel display. */
 body { border-color: red; }
+.hidden		{	display: none;	}
 template	{	display: none;	}
 insert		{	display: block;	}
 selection	{
